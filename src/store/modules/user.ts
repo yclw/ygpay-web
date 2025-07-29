@@ -9,30 +9,30 @@ import {
 } from "../utils";
 import {
   type UserResult,
-  type RefreshTokenResult,
-  getLogin,
-  refreshTokenApi
+  // type RefreshTokenResult,
+  getLogin
+  // refreshTokenApi
 } from "@/api/user";
+import {
+  refreshToken,
+  type RefreshTokenResult,
+  type RefreshTokenRequest
+} from "@/api/login";
 import { useMultiTagsStoreHook } from "./multiTags";
-import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
+import { setToken, removeToken, userKey } from "@/utils/auth";
 
 export const useUserStore = defineStore("pure-user", {
   state: (): userType => ({
-    // 头像
-    avatar: storageLocal().getItem<DataInfo<number>>(userKey)?.avatar ?? "",
-    // 用户名
-    username: storageLocal().getItem<DataInfo<number>>(userKey)?.username ?? "",
-    // 昵称
-    nickname: storageLocal().getItem<DataInfo<number>>(userKey)?.nickname ?? "",
-    // 页面级别权限
-    roles: storageLocal().getItem<DataInfo<number>>(userKey)?.roles ?? [],
-    // 按钮级别权限
-    permissions:
-      storageLocal().getItem<DataInfo<number>>(userKey)?.permissions ?? [],
-    // 是否勾选了登录页的免登录
+    // 初始化默认值
+    avatar: "",
+    username: "",
+    nickname: "",
+    roles: [],
+    permissions: [],
     isRemembered: false,
-    // 登录页的免登录存储几天，默认7天
-    loginDay: 7
+    loginDay: 7,
+    // 从localStorage读取用户信息覆盖默认值
+    ...storageLocal().getItem<userType>(userKey)
   }),
   actions: {
     /** 存储头像 */
@@ -63,13 +63,34 @@ export const useUserStore = defineStore("pure-user", {
     SET_LOGINDAY(value: number) {
       this.loginDay = Number(value);
     },
+    /** 设置用户信息 */
+    SET_USER_INFO(userInfo: userType) {
+      this.avatar = userInfo.avatar || "";
+      this.username = userInfo.username || "";
+      this.nickname = userInfo.nickname || "";
+      this.roles = userInfo.roles || [];
+      this.permissions = userInfo.permissions || [];
+      if (userInfo.isRemembered !== undefined) {
+        this.isRemembered = userInfo.isRemembered;
+      }
+      if (userInfo.loginDay !== undefined) {
+        this.loginDay = userInfo.loginDay;
+      }
+      // 保存到localStorage
+      storageLocal().setItem(userKey, this);
+    },
     /** 登入 */
-    async loginByUsername(data) {
+    async loginByUsername(data: UserResult) {
       return new Promise<UserResult>((resolve, reject) => {
         getLogin(data)
-          .then(data => {
-            if (data?.success) setToken(data.data);
-            resolve(data);
+          .then(async res => {
+            if (res?.success) {
+              // 分离处理：先设置token
+              setToken(res.data);
+
+              this.SET_USER_INFO(res.data);
+            }
+            resolve(res);
           })
           .catch(error => {
             reject(error);
@@ -87,13 +108,13 @@ export const useUserStore = defineStore("pure-user", {
       router.push("/login");
     },
     /** 刷新`token` */
-    async handRefreshToken(data) {
+    async handRefreshToken(data: RefreshTokenRequest) {
       return new Promise<RefreshTokenResult>((resolve, reject) => {
-        refreshTokenApi(data)
-          .then(data => {
-            if (data) {
-              setToken(data.data);
-              resolve(data);
+        refreshToken(data)
+          .then(res => {
+            if (res?.success) {
+              setToken(res.data);
+              resolve(res);
             }
           })
           .catch(error => {
