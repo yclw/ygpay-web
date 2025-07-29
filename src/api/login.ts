@@ -99,7 +99,8 @@ export const accountLogin = (data: AccountLoginRequest) => {
 export const refreshToken = (data: RefreshTokenRequest) => {
   return http.request<RefreshTokenResult>(
     "post",
-    baseUrlApi("login/refreshToken"),
+    // baseUrlApi("login/refreshToken"),
+    "/refresh-token",
     {
       data
     }

@@ -1,7 +1,7 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "./utils";
 
-/////////// 已废弃 //////////////
+/////////// 准备移除 //////////////
 
 export type UserResult = {
   success: boolean;
@@ -12,8 +12,6 @@ export type UserResult = {
     username: string;
     /** 昵称 */
     nickname: string;
-    /** 当前登录用户的角色 */
-    roles: Array<string>;
     /** 按钮级别权限 */
     permissions: Array<string>;
     /** `token` */

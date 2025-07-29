@@ -18,8 +18,6 @@ import {
 } from "@pureadmin/utils";
 import { getConfig } from "@/config";
 import { buildHierarchyTree } from "@/utils/tree";
-import { userKey } from "@/utils/auth";
-import type { userType } from "@/store/types";
 import { type menuType, routerArrays } from "@/layout/types";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
@@ -64,7 +62,7 @@ function filterTree(data: RouteComponent[]) {
   return newTree;
 }
 
-/** 过滤children长度为0的的目录，当目录下没有菜单时，会过滤此目录，目录没有赋予roles权限，当目录下只要有一个菜单有显示权限，那么此目录就会显示 */
+/** 过滤children长度为0的的目录，当目录下没有菜单时，会过滤此目录，当目录下只要有一个菜单有显示权限，那么此目录就会显示 */
 function filterChildrenTree(data: RouteComponent[]) {
   const newTree = cloneDeep(data).filter((v: any) => v?.children?.length !== 0);
   newTree.forEach(
@@ -82,15 +80,9 @@ function isOneOfArray(a: Array<string>, b: Array<string>) {
     : true;
 }
 
-/** 从localStorage里取出当前登录用户的角色roles，过滤无权限的菜单 */
+/** 过滤无权限的菜单 */
 function filterNoPermissionTree(data: RouteComponent[]) {
-  const currentRoles = storageLocal().getItem<userType>(userKey)?.roles ?? [];
-  const newTree = cloneDeep(data).filter((v: any) =>
-    isOneOfArray(v.meta?.roles, currentRoles)
-  );
-  newTree.forEach(
-    (v: any) => v.children && (v.children = filterNoPermissionTree(v.children))
-  );
+  const newTree = cloneDeep(data);
   return filterChildrenTree(newTree);
 }
 

@@ -14,7 +14,7 @@ import { useUserStoreHook } from "@/store/modules/user";
 (function () {
   // 获取 url 中的参数
   const params = getQueryMap(location.href) as any;
-  const must = ["username", "roles", "token"];
+  const must = ["username", "token"];
   const mustLength = must.length;
   if (Object.keys(params).length !== mustLength) return;
 
@@ -44,7 +44,6 @@ import { useUserStoreHook } from "@/store/modules/user";
     useUserStoreHook().SET_USER_INFO(params);
 
     // 删除不需要显示在 url 的参数
-    delete params.roles;
     delete params.token;
     delete params.expires;
     delete params.refreshToken;

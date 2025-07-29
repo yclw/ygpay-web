@@ -19,7 +19,12 @@ import {
   type RefreshTokenRequest
 } from "@/api/login";
 import { useMultiTagsStoreHook } from "./multiTags";
-import { setToken, removeToken, userKey } from "@/utils/auth";
+import {
+  setToken,
+  setMultipleTabsKey,
+  removeToken,
+  userKey
+} from "@/utils/auth";
 
 export const useUserStore = defineStore("pure-user", {
   state: (): userType => ({
@@ -27,9 +32,9 @@ export const useUserStore = defineStore("pure-user", {
     avatar: "",
     username: "",
     nickname: "",
-    roles: [],
+    roleKey: "",
     permissions: [],
-    isRemembered: false,
+    isRemembered: true,
     loginDay: 7,
     // 从localStorage读取用户信息覆盖默认值
     ...storageLocal().getItem<userType>(userKey)
@@ -46,10 +51,6 @@ export const useUserStore = defineStore("pure-user", {
     /** 存储昵称 */
     SET_NICKNAME(nickname: string) {
       this.nickname = nickname;
-    },
-    /** 存储角色 */
-    SET_ROLES(roles: Array<string>) {
-      this.roles = roles;
     },
     /** 存储按钮级别权限 */
     SET_PERMS(permissions: Array<string>) {
@@ -68,7 +69,6 @@ export const useUserStore = defineStore("pure-user", {
       this.avatar = userInfo.avatar || "";
       this.username = userInfo.username || "";
       this.nickname = userInfo.nickname || "";
-      this.roles = userInfo.roles || [];
       this.permissions = userInfo.permissions || [];
       if (userInfo.isRemembered !== undefined) {
         this.isRemembered = userInfo.isRemembered;
@@ -76,18 +76,23 @@ export const useUserStore = defineStore("pure-user", {
       if (userInfo.loginDay !== undefined) {
         this.loginDay = userInfo.loginDay;
       }
+      if (userInfo.roleKey !== undefined) {
+        this.roleKey = userInfo.roleKey;
+      }
       // 保存到localStorage
       storageLocal().setItem(userKey, this);
     },
     /** 登入 */
-    async loginByUsername(data: UserResult) {
+    async loginByUsername(data: { username: string; password: string }) {
       return new Promise<UserResult>((resolve, reject) => {
         getLogin(data)
           .then(async res => {
             if (res?.success) {
               // 分离处理：先设置token
               setToken(res.data);
-
+              // 每次真正登录时都重新设置多标签页支持
+              setMultipleTabsKey();
+              // 设置用户信息
               this.SET_USER_INFO(res.data);
             }
             resolve(res);
@@ -100,7 +105,6 @@ export const useUserStore = defineStore("pure-user", {
     /** 前端登出（不调用接口） */
     logOut() {
       this.username = "";
-      this.roles = [];
       this.permissions = [];
       removeToken();
       useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
