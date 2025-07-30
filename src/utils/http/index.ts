@@ -74,13 +74,24 @@ class PureHttp {
         }
         /** 请求白名单，放置一些不需要`token`的接口（通过设置请求白名单，防止`token`过期后再请求造成的死循环问题） */
         const whiteList = ["/refresh-token", "/login"];
-        return whiteList.some(url => config.url.endsWith(url))
+        const isWhiteList = whiteList.some(url => config.url.endsWith(url));
+
+        return isWhiteList
           ? config
           : new Promise(resolve => {
               const data = getToken();
               if (data) {
-                const now = new Date().getTime();
-                const expired = parseInt(data.expires) - now <= 0;
+                const now = Math.floor(Date.now() / 1000); // 转换为秒级时间戳
+                const expired = parseInt(data.expires) - now <= 100;
+                console.log(
+                  "token是否过期：",
+                  expired,
+                  "当前时间（秒）：",
+                  now,
+                  "过期时间（秒）：",
+                  data.expires
+                );
+
                 if (expired) {
                   if (!PureHttp.isRefreshing) {
                     PureHttp.isRefreshing = true;

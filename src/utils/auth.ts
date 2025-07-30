@@ -33,11 +33,14 @@ export function getToken(): TokenInfo {
   // 如果Cookie中没有，尝试从localStorage中获取（用于"记住我"功能）
   const tokenFromStorage = storageLocal().getItem<TokenInfo>(TokenStorageKey);
   if (tokenFromStorage) {
-    // 检查"记住我"是否已过期
+    // 检查"记住我"是否已过期（使用秒级时间戳）
     const loginTime = storageLocal().getItem<number>(LoginTimeKey);
     const { loginDay } = useUserStoreHook();
 
-    if (loginTime && (Date.now() - loginTime) / 86400000 > loginDay) {
+    if (
+      loginTime &&
+      (Math.floor(Date.now() / 1000) - loginTime) / 86400 > loginDay
+    ) {
       // 如果超过设定天数，清除所有信息，要求重新登录
       removeToken();
       return null;
@@ -63,10 +66,10 @@ export function setToken(data: TokenInfo) {
   const { isRemembered } = useUserStoreHook();
   const cookieString = JSON.stringify(data);
 
-  // 设置Cookie
+  // 设置Cookie（expires是秒级时间戳，需要转换为天数）
   expires > 0
     ? Cookies.set(TokenKey, cookieString, {
-        expires: (expires - Date.now()) / 86400000
+        expires: (expires - Math.floor(Date.now() / 1000)) / 86400
       })
     : Cookies.set(TokenKey, cookieString);
 
@@ -86,9 +89,9 @@ export function setMultipleTabsKey() {
   // 设置多标签页支持
   Cookies.set(multipleTabsKey, "true", { expires: loginDay });
 
-  // 如果选择了"记住我"，记录登录时间戳用于控制总体过期时间
+  // 如果选择了"记住我"，记录登录时间戳用于控制总体过期时间（使用秒级时间戳）
   if (isRemembered) {
-    storageLocal().setItem(LoginTimeKey, Date.now());
+    storageLocal().setItem(LoginTimeKey, Math.floor(Date.now() / 1000));
   }
 }
 

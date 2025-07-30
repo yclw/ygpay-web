@@ -8,27 +8,100 @@ type Result = {
   data: any;
 };
 
+export type ApiModel = {
+  Id: number;
+  Name: string;
+  Path: string;
+  Method: string;
+  GroupName: string;
+  Description: string;
+  NeedAuth: number;
+  RateLimit: number;
+  Sort: number;
+  Status: number;
+  CreatedAt: Date;
+  UpdatedAt: Date;
+};
+
+export type ApiOneResult = {
+  success: boolean;
+  code: number;
+  message: string;
+  data: ApiModel;
+};
+
+export type ApiListRequest = {
+  page: number;
+  size: number;
+  name?: string;
+  path?: string;
+  method?: string;
+  groupName?: string;
+  status?: number;
+  startDate?: Date;
+  endDate?: Date;
+  sortField?: string;
+  sortDesc?: boolean;
+};
+
+export type ApiListResult = {
+  success: boolean;
+  code: number;
+  message: string;
+  data: {
+    list: ApiModel[];
+    total: number;
+  };
+};
+
+export type ApiCreateRequest = {
+  name: string;
+  path: string;
+  method: string;
+  groupName: string;
+  description: string;
+  needAuth: number;
+  rateLimit: number;
+  sort: number;
+  status: number;
+};
+
+export type ApiUpdateRequest = {
+  id: number;
+  name: string;
+  path: string;
+  method: string;
+  groupName: string;
+  description: string;
+  needAuth: number;
+  rateLimit: number;
+  sort: number;
+  status: number;
+};
+
 // 获取api详情
-export const getApiOne = (data: any) => {
-  return http.request<Result>("get", baseUrlApi("api/one"), { data });
+export const getApiOne = (params: { id: number }) => {
+  return http.request<ApiOneResult>("get", baseUrlApi("api/one"), { params });
 };
 
 // 获取api列表
-export const getApiList = (data: any) => {
-  return http.request<Result>("get", baseUrlApi("api/list"), { data });
+export const getApiList = (params: ApiListRequest) => {
+  return http.request<ApiListResult>("get", baseUrlApi("api/list"), { params });
 };
 
 // 创建api
-export const createApi = (data: any) => {
-  return http.request<Result>("post", baseUrlApi("api/create"), { data });
+export const createApi = (data: ApiCreateRequest) => {
+  return http.request<Result>("post", baseUrlApi("api/create"), {
+    data
+  });
 };
 
 // 更新api
-export const updateApi = (data: any) => {
+export const updateApi = (data: ApiUpdateRequest) => {
   return http.request<Result>("put", baseUrlApi("api/update"), { data });
 };
 
 // 删除api
-export const deleteApi = (data: any) => {
+export const deleteApi = (data: { id: number }) => {
   return http.request<Result>("delete", baseUrlApi("api/delete"), { data });
 };

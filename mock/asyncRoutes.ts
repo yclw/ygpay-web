@@ -55,6 +55,45 @@ const permissionRouter = {
   ]
 };
 
+// api管理
+const apiRouter = {
+  path: "/api",
+  meta: {
+    title: "API管理",
+    icon: "ep:lollipop",
+    rank: 10
+  },
+  children: [
+    {
+      path: "/api/index",
+      name: "ApiIndex",
+      meta: {
+        title: "API管理"
+        // showParent: true
+      }
+    }
+  ]
+};
+
+// 菜单管理
+const menuRouter = {
+  path: "/menu",
+  meta: {
+    title: "菜单管理",
+    icon: "ep:lollipop",
+    rank: 20
+  },
+  children: [
+    {
+      path: "/menu/index",
+      name: "MenuIndex",
+      meta: {
+        title: "菜单管理"
+      }
+    }
+  ]
+};
+
 export default defineFakeRoute([
   {
     url: "/user/menu",
@@ -62,7 +101,7 @@ export default defineFakeRoute([
     response: () => {
       return {
         success: true,
-        data: [permissionRouter]
+        data: [permissionRouter, menuRouter, apiRouter]
       };
     }
   }

@@ -12,8 +12,8 @@ type Result = {
 export type AccountLoginRequest = {
   username: string; // 用户名
   password: string; // 密码
-  captchaId?: string; // 验证码ID
-  captcha?: string; // 验证码
+  cid?: string; // 验证码ID
+  code?: string; // 验证码
   isRemembered?: boolean; // 是否记住密码
 };
 
@@ -99,8 +99,8 @@ export const accountLogin = (data: AccountLoginRequest) => {
 export const refreshToken = (data: RefreshTokenRequest) => {
   return http.request<RefreshTokenResult>(
     "post",
-    // baseUrlApi("login/refreshToken"),
-    "/refresh-token",
+    baseUrlApi("login/refreshToken"),
+    // "/refresh-token",
     {
       data
     }

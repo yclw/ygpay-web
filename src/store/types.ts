@@ -37,11 +37,34 @@ export type setType = {
 };
 
 export type userType = {
-  avatar: string;
-  username: string;
-  nickname: string;
-  permissions: Array<string>;
   isRemembered?: boolean;
   loginDay?: number;
-  roleKey?: string;
+  // 用户UID
+  uid: string;
+  // 昵称
+  nickname: string;
+  // 所属角色
+  roleId: number;
+  // 权限信息
+  permissions: Array<string>;
+  // 用户名
+  username: string;
+  // 头像
+  avatar: string;
+  // 性别
+  sex: number;
+  // 邮箱
+  email: string;
+  // 手机号码
+  mobile: string;
+  // 联系地址
+  address: string;
+  // 创建时间
+  createdAt: Date;
+  // 登录次数
+  loginCount: number;
+  // 最后登录时间
+  lastLoginAt: Date;
+  // 最后登录IP
+  lastLoginIp: string;
 };
