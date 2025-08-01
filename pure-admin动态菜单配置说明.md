@@ -15,6 +15,122 @@
 
 ## 完整的菜单/目录字段说明
 
+id // 菜单id（主键id）
+
+
+
+type // 分类（目录/菜单/外链）
+
+
+
+共有：
+
+path // 路径（必要，唯一）
+
+name // 名称（必要，唯一）
+
+title // 标题（必要）
+
+icon // 图标（非必要）
+
+rank // 排序（默认10）
+
+showParent // 是否显示父级菜单（当父级菜单只有唯一子菜单时生效，默认false）
+
+keepAlive // 是否缓存（默认false）
+
+showLink // 是否显示该菜单（默认ture）
+
+
+
+目录：
+
+redirect // 重定向到其他path（非必要）
+
+children // 子菜单（必要）
+
+
+
+菜单：
+
+component // 页面路径（必要）
+
+
+
+外链：
+
+外部链接：name为地址
+
+内嵌：frameSrc为地址 
+
+
+
+目录时：
+
+path // 路径（必要）
+
+name // 名称（必要）
+
+title // 标题（必要）
+
+icon // 图标（非必要）
+
+rank // 排序（必要，默认10）
+
+showParent // 是否显示父级菜单（必要，默认false）
+
+keepAlive // 是否缓存（必要，默认false）
+
+showLink // 是否显示该菜单（必要，默认ture）
+
+redirect // 重定向到其他path（非必要）
+
+
+
+菜单时：
+
+path // 路径（必要）
+
+name // 名称（必要）
+
+title // 标题（必要）
+
+icon // 图标（非必要）
+
+rank // 排序（必要，默认10）
+
+showParent // 是否显示父级菜单（必要，默认false）
+
+keepAlive // 是否缓存（必要，默认false）
+
+showLink // 是否显示该菜单（必要，默认ture）
+
+component // 页面路径（必要）
+
+
+
+外链时：
+
+path // 路径（必要）
+
+name // 外链地址（必要）
+
+title // 标题（必要）
+
+icon // 图标（非必要）
+
+rank // 排序（必要，默认10）
+
+showParent // 是否显示父级菜单（必要，默认false）
+
+keepAlive // 是否缓存（必要，默认false）
+
+showLink // 是否显示该菜单（必要，默认ture）
+
+frameSrc // 内嵌地址 
+
+
+
 ### 1. **目录配置** (有children的父级菜单)
 
 ```typescript

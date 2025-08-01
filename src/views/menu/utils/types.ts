@@ -3,34 +3,36 @@
 interface FormItemProps {
   /** 菜单ID */
   id?: number;
-  /** 父级ID */
-  pid: number;
+  /** 菜单类型: 0目录 1菜单 2外链 */
+  type: number;
   /** 菜单名称 */
   name: string;
   /** 菜单路径 */
   path: string;
-  /** 菜单图标 */
-  icon: string;
   /** 菜单标题 */
   title: string;
-  /** 是否显示父级 */
-  showParent: boolean;
-  /** 组件路径 */
-  component: string;
-  /** 不显示子级 */
-  noShowingChildren: boolean;
-  /** 额外值 */
-  value: any;
-  /** 显示提示 */
-  showTooltip: boolean;
-  /** 父级ID */
-  parentId: number;
-  /** 重定向路径 */
-  redirect: string;
-  /** 描述 */
-  description: string;
+  /** 菜单图标 */
+  icon: string;
   /** 排序 */
   sort: number;
+  /** 是否显示父级 */
+  showParent: boolean;
+  /** 是否显示该菜单 */
+  showLink: boolean;
+  /** 是否缓存 */
+  keepAlive: boolean;
+  /** 父级ID */
+  parentId: number;
+  /** 父级菜单标题 */
+  parentTitle: string;
+  /** 重定向路径 */
+  redirect: string;
+  /** 组件路径 */
+  component: string;
+  /** 内嵌地址 */
+  frameSrc: string;
+  /** 外部链接 */
+  url: string;
   /** 状态 */
   status: number;
 }

@@ -9,24 +9,25 @@ type Result = {
 };
 
 export type MenuModel = {
-  id: number;
-  pid: number;
-  name: string;
-  path: string;
-  icon: string;
-  title: string;
-  showParent: boolean;
-  component: string;
-  noShowingChildren: boolean;
-  value: any;
-  showTooltip: boolean;
-  parentId: number;
-  redirect: string;
-  description: string;
-  sort: number;
-  status: number;
-  createdAt: Date;
-  updatedAt: Date;
+  id: number; //菜单ID
+  type: number; //菜单类型: 0目录 1菜单 2外链
+  name: string; //菜单名称
+  path: string; //菜单路径
+  title: string; //菜单标题
+  icon: string; //菜单图标
+  sort: number; //排序
+  showParent: boolean; //是否显示父菜单
+  showLink: boolean; //是否显示该菜单
+  keepAlive: boolean; //是否缓存
+  parentId: number; //父级ID
+  parentTitle: string; //父级菜单标题
+  redirect: string; //重定向
+  component: string; //组件路径
+  frameSrc: string; //内嵌地址
+  url: string; //外部链接
+  status: number; //状态: 0禁用 1启用
+  createdAt: Date; //创建时间
+  updatedAt: Date; //更新时间
 };
 
 export type MenuOneResult = {
@@ -53,39 +54,39 @@ export type MenuListResult = {
 };
 
 export type MenuCreateRequest = {
-  pid: number;
+  type: number;
   name: string;
   path: string;
-  icon: string;
   title: string;
+  icon: string;
+  sort: number;
   showParent: boolean;
-  component: string;
-  noShowingChildren: boolean;
-  value: any;
-  showTooltip: boolean;
+  showLink: boolean;
+  keepAlive: boolean;
   parentId: number;
   redirect: string;
-  description: string;
-  sort: number;
+  component: string;
+  frameSrc: string;
+  url: string;
   status: number;
 };
 
 export type MenuUpdateRequest = {
   id: number;
-  pid: number;
+  type: number;
   name: string;
   path: string;
-  icon: string;
   title: string;
+  icon: string;
+  sort: number;
   showParent: boolean;
-  component: string;
-  noShowingChildren: boolean;
-  value: any;
-  showTooltip: boolean;
+  showLink: boolean;
+  keepAlive: boolean;
   parentId: number;
   redirect: string;
-  description: string;
-  sort: number;
+  component: string;
+  frameSrc: string;
+  url: string;
   status: number;
 };
 

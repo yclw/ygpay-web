@@ -29,8 +29,7 @@ export const useUserStore = defineStore("pure-user", {
     // 初始化默认值
     uid: "",
     nickname: "",
-    roleId: 0,
-    permissions: [],
+    roleName: "",
     username: "",
     avatar: "",
     sex: 0,
@@ -38,9 +37,6 @@ export const useUserStore = defineStore("pure-user", {
     mobile: "",
     address: "",
     createdAt: new Date(),
-    loginCount: 0,
-    lastLoginAt: new Date(),
-    lastLoginIp: "",
     isRemembered: true,
     loginDay: 7,
     // 从localStorage读取用户信息覆盖默认值
@@ -63,14 +59,11 @@ export const useUserStore = defineStore("pure-user", {
     SET_NICKNAME(nickname: string) {
       this.nickname = nickname;
     },
-    /** 存储角色ID */
-    SET_ROLE_ID(roleId: number) {
-      this.roleId = roleId;
+    /** 存储角色名称 */
+    SET_ROLE_NAME(roleName: string) {
+      this.roleName = roleName;
     },
-    /** 存储按钮级别权限 */
-    SET_PERMS(permissions: Array<string>) {
-      this.permissions = permissions;
-    },
+
     /** 存储性别 */
     SET_SEX(sex: number) {
       this.sex = sex;
@@ -91,18 +84,6 @@ export const useUserStore = defineStore("pure-user", {
     SET_CREATED_AT(createdAt: Date) {
       this.createdAt = createdAt;
     },
-    /** 存储登录次数 */
-    SET_LOGIN_COUNT(loginCount: number) {
-      this.loginCount = loginCount;
-    },
-    /** 存储最后登录时间 */
-    SET_LAST_LOGIN_AT(lastLoginAt: Date) {
-      this.lastLoginAt = lastLoginAt;
-    },
-    /** 存储最后登录IP */
-    SET_LAST_LOGIN_IP(lastLoginIp: string) {
-      this.lastLoginIp = lastLoginIp;
-    },
     /** 存储是否勾选了登录页的免登录 */
     SET_ISREMEMBERED(bool: boolean) {
       this.isRemembered = bool;
@@ -115,8 +96,7 @@ export const useUserStore = defineStore("pure-user", {
     SET_USER_INFO(userInfo: userType) {
       this.uid = userInfo.uid || "";
       this.nickname = userInfo.nickname || "";
-      this.roleId = userInfo.roleId || 0;
-      this.permissions = userInfo.permissions || [];
+      this.roleName = userInfo.roleName || "";
       this.username = userInfo.username || "";
       this.avatar = userInfo.avatar || "";
       this.sex = userInfo.sex || 0;
@@ -124,9 +104,6 @@ export const useUserStore = defineStore("pure-user", {
       this.mobile = userInfo.mobile || "";
       this.address = userInfo.address || "";
       this.createdAt = userInfo.createdAt || new Date();
-      this.loginCount = userInfo.loginCount || 0;
-      this.lastLoginAt = userInfo.lastLoginAt || new Date();
-      this.lastLoginIp = userInfo.lastLoginIp || "";
       if (userInfo.isRemembered !== undefined) {
         this.isRemembered = userInfo.isRemembered;
       }
@@ -175,7 +152,6 @@ export const useUserStore = defineStore("pure-user", {
     /** 前端登出（不调用接口） */
     logOut() {
       this.username = "";
-      this.permissions = [];
       removeToken();
       useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
       resetRouter();
@@ -189,9 +165,15 @@ export const useUserStore = defineStore("pure-user", {
             if (res?.success) {
               setToken(res.data);
               resolve(res);
+            } else {
+              // 刷新token失败，执行登出
+              this.logOut();
+              reject(res);
             }
           })
           .catch(error => {
+            // 刷新token请求失败，执行登出
+            this.logOut();
             reject(error);
           });
       });

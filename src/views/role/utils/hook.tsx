@@ -7,20 +7,20 @@ import { addDialog } from "@/components/ReDialog";
 import type { FormItemProps } from "./types";
 import type { PaginationProps } from "@pureadmin/table";
 import { deviceDetection } from "@pureadmin/utils";
-import { getMenuList, createMenu, updateMenu, deleteMenu } from "@/api/menu";
+import { getRoleList, createRole, updateRole, deleteRole } from "@/api/role";
 import { reactive, ref, onMounted, h, toRaw } from "vue";
 
-export function useMenu() {
+export function useRole() {
   const form = reactive({
     name: "",
-    title: "",
-    path: "",
+    key: "",
+    parentId: undefined,
+    parentName: "",
     status: undefined,
     startDate: undefined,
     endDate: undefined
   });
 
-  // 排序状态独立管理
   const sortField = ref("sort");
   const sortDesc = ref(false);
   const formRef = ref();
@@ -42,47 +42,18 @@ export function useMenu() {
       width: 80
     },
     {
-      label: "菜单名称",
+      label: "角色名称",
       prop: "name",
       minWidth: 120
     },
     {
-      label: "菜单标题",
-      prop: "title",
+      label: "角色标识",
+      prop: "key",
       minWidth: 120
     },
     {
-      label: "菜单路径",
-      prop: "path",
-      minWidth: 200
-    },
-    {
-      label: "图标",
-      prop: "icon",
-      width: 100,
-      cellRenderer: scope => (
-        <div class="flex items-center justify-center">
-          {scope.row.icon && <i class={scope.row.icon} />}
-        </div>
-      )
-    },
-    {
-      label: "菜单类型",
-      prop: "type",
-      width: 100,
-      cellRenderer: scope => (
-        <el-tag size="small">
-          {scope.row.type === 0
-            ? "目录"
-            : scope.row.type === 1
-              ? "菜单"
-              : "外链"}
-        </el-tag>
-      )
-    },
-    {
-      label: "组件路径",
-      prop: "component",
+      label: "备注",
+      prop: "remark",
       minWidth: 200,
       showOverflowTooltip: true
     },
@@ -92,32 +63,9 @@ export function useMenu() {
       width: 80
     },
     {
-      label: "父级菜单标题",
-      prop: "parentTitle",
+      label: "父级角色名称",
+      prop: "parentName",
       minWidth: 120
-    },
-    {
-      label: "显示菜单",
-      prop: "showLink",
-      width: 100,
-      cellRenderer: scope => (
-        <el-tag style={tagStyle.value(scope.row.showLink ? 1 : 0)} size="small">
-          {scope.row.showLink ? "显示" : "隐藏"}
-        </el-tag>
-      )
-    },
-    {
-      label: "缓存",
-      prop: "keepAlive",
-      width: 80,
-      cellRenderer: scope => (
-        <el-tag
-          style={tagStyle.value(scope.row.keepAlive ? 1 : 0)}
-          size="small"
-        >
-          {scope.row.keepAlive ? "是" : "否"}
-        </el-tag>
-      )
     },
     {
       label: "排序",
@@ -142,6 +90,13 @@ export function useMenu() {
         dayjs(createdAt).format("YYYY-MM-DD HH:mm:ss")
     },
     {
+      label: "更新时间",
+      prop: "updatedAt",
+      minWidth: 160,
+      formatter: ({ updatedAt }) =>
+        dayjs(updatedAt).format("YYYY-MM-DD HH:mm:ss")
+    },
+    {
       label: "操作",
       fixed: "right",
       width: 180,
@@ -151,7 +106,7 @@ export function useMenu() {
 
   function handleDelete(row) {
     ElMessageBox.confirm(
-      `确认要删除菜单名称为<strong style='color:var(--el-color-primary)'>${row.name}</strong>的这条数据吗？`,
+      `确认要删除角色名称为<strong style='color:var(--el-color-primary)'>${row.name}</strong>的这条数据吗？`,
       "系统提示",
       {
         confirmButtonText: "确定",
@@ -163,8 +118,8 @@ export function useMenu() {
     )
       .then(async () => {
         try {
-          await deleteMenu({ id: row.id });
-          message(`已删除菜单名称为${row.name}的这条数据`, { type: "success" });
+          await deleteRole({ id: row.id });
+          message(`已删除角色名称为${row.name}的这条数据`, { type: "success" });
           onSearch();
         } catch {
           message("删除失败", { type: "error" });
@@ -195,13 +150,15 @@ export function useMenu() {
       const params = {
         page: pagination.currentPage,
         size: pagination.pageSize,
-        ...toRaw(form)
+        ...toRaw(form),
+        sortField: sortField.value,
+        sortDesc: sortDesc.value
       };
-      const { data } = await getMenuList(params);
+      const { data } = await getRoleList(params);
       dataList.value = data.list;
       pagination.total = data.total;
     } catch {
-      message("获取菜单列表失败", { type: "error" });
+      message("获取角色列表失败", { type: "error" });
     } finally {
       loading.value = false;
     }
@@ -220,24 +177,15 @@ export function useMenu() {
 
   function openDialog(title = "新增", row?: any) {
     addDialog({
-      title: `${title}菜单`,
+      title: `${title}角色`,
       props: {
         formInline: {
-          type: row?.type ?? 1,
           name: row?.name ?? "",
-          path: row?.path ?? "",
-          title: row?.title ?? "",
-          icon: row?.icon ?? "",
-          sort: row?.sort ?? 10,
-          showParent: row?.showParent ?? false,
-          showLink: row?.showLink ?? true,
-          keepAlive: row?.keepAlive ?? false,
+          key: row?.key ?? "",
+          remark: row?.remark ?? "",
           parentId: row?.parentId ?? 0,
-          parentTitle: row?.parentTitle ?? "",
-          redirect: row?.redirect ?? "",
-          component: row?.component ?? "",
-          frameSrc: row?.frameSrc ?? "",
-          url: row?.url ?? "",
+          parentName: row?.parentName ?? "",
+          sort: row?.sort ?? 0,
           status: row?.status ?? 1
         }
       },
@@ -252,7 +200,7 @@ export function useMenu() {
         const curData = options.props.formInline as FormItemProps;
 
         function chores() {
-          message(`您${title}了菜单名称为${curData.name}的这条数据`, {
+          message(`您${title}了角色名称为${curData.name}的这条数据`, {
             type: "success"
           });
           done(); // 关闭弹框
@@ -263,9 +211,9 @@ export function useMenu() {
           if (valid) {
             try {
               if (title === "新增") {
-                await createMenu(curData);
+                await createRole(curData);
               } else {
-                await updateMenu({
+                await updateRole({
                   id: row?.id,
                   ...curData
                 });

@@ -73,7 +73,7 @@ class PureHttp {
           return config;
         }
         /** 请求白名单，放置一些不需要`token`的接口（通过设置请求白名单，防止`token`过期后再请求造成的死循环问题） */
-        const whiteList = ["/refresh-token", "/login"];
+        const whiteList = ["/login/refreshToken", "/login"];
         const isWhiteList = whiteList.some(url => config.url.endsWith(url));
 
         return isWhiteList
@@ -93,7 +93,9 @@ class PureHttp {
                 );
 
                 if (expired) {
+                  console.log("token过期，刷新token");
                   if (!PureHttp.isRefreshing) {
+                    console.log("刷新token");
                     PureHttp.isRefreshing = true;
                     // token过期刷新
                     useUserStoreHook()
@@ -102,6 +104,11 @@ class PureHttp {
                         const token = res.data.token;
                         config.headers["Authorization"] = formatToken(token);
                         PureHttp.requests.forEach(cb => cb(token));
+                        PureHttp.requests = [];
+                      })
+                      .catch(error => {
+                        // 刷新token失败时清空待执行的请求
+                        console.log("HTTP拦截器：刷新token失败", error);
                         PureHttp.requests = [];
                       })
                       .finally(() => {

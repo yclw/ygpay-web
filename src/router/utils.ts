@@ -197,8 +197,9 @@ function initRouter() {
     } else {
       return new Promise(resolve => {
         getAsyncRoutes().then(({ data }) => {
-          handleAsyncRoutes(cloneDeep(data));
-          storageLocal().setItem(key, data);
+          const menuData = data.menu;
+          handleAsyncRoutes(cloneDeep(menuData));
+          storageLocal().setItem(key, menuData);
           resolve(router);
         });
       });
@@ -206,7 +207,8 @@ function initRouter() {
   } else {
     return new Promise(resolve => {
       getAsyncRoutes().then(({ data }) => {
-        handleAsyncRoutes(cloneDeep(data));
+        const menuData = data.menu;
+        handleAsyncRoutes(cloneDeep(menuData));
         resolve(router);
       });
     });

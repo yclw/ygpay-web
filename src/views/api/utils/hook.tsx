@@ -21,7 +21,6 @@ export function useApi() {
     endDate: undefined
   });
 
-  // 排序状态独立管理
   const sortField = ref("sort");
   const sortDesc = ref(false);
   const formRef = ref();
@@ -39,92 +38,92 @@ export function useApi() {
   const columns: TableColumnList = [
     {
       label: "ID",
-      prop: "Id",
+      prop: "id",
       width: 80
     },
     {
       label: "API名称",
-      prop: "Name",
+      prop: "name",
       minWidth: 120
     },
     {
       label: "API路径",
-      prop: "Path",
+      prop: "path",
       minWidth: 200
     },
     {
       label: "请求方法",
-      prop: "Method",
+      prop: "method",
       width: 100,
       cellRenderer: scope => (
         <el-tag
           type={
-            scope.row.Method === "GET"
+            scope.row.method === "GET"
               ? "success"
-              : scope.row.Method === "POST"
+              : scope.row.method === "POST"
                 ? "primary"
-                : scope.row.Method === "PUT"
+                : scope.row.method === "PUT"
                   ? "warning"
-                  : scope.row.Method === "DELETE"
+                  : scope.row.method === "DELETE"
                     ? "danger"
                     : "info"
           }
           size="small"
         >
-          {scope.row.Method}
+          {scope.row.method}
         </el-tag>
       )
     },
     {
       label: "分组名称",
-      prop: "GroupName",
+      prop: "groupName",
       minWidth: 120
     },
     {
       label: "描述",
-      prop: "Description",
+      prop: "description",
       minWidth: 200,
       showOverflowTooltip: true
     },
     {
       label: "认证",
-      prop: "NeedAuth",
+      prop: "needAuth",
       width: 80,
       cellRenderer: scope => (
         <el-tag
-          type={scope.row.NeedAuth === 1 ? "success" : "info"}
+          type={scope.row.needAuth === 1 ? "success" : "info"}
           size="small"
         >
-          {scope.row.NeedAuth === 1 ? "需要" : "无需"}
+          {scope.row.needAuth === 1 ? "需要" : "无需"}
         </el-tag>
       )
     },
     {
       label: "限流",
-      prop: "RateLimit",
+      prop: "rateLimit",
       width: 80
     },
     {
       label: "排序",
-      prop: "Sort",
+      prop: "sort",
       width: 80
     },
     {
       label: "状态",
-      prop: "Status",
+      prop: "status",
       width: 100,
       cellRenderer: scope => (
-        <el-tag style={tagStyle.value(scope.row.Status)} size="small">
-          {scope.row.Status === 1 ? "启用" : "禁用"}
+        <el-tag style={tagStyle.value(scope.row.status)} size="small">
+          {scope.row.status === 1 ? "启用" : "禁用"}
         </el-tag>
       )
     },
     {
       label: "创建时间",
-      prop: "CreatedAt",
+      prop: "createdAt",
       minWidth: 160,
-      formatter: ({ CreatedAt }) =>
-        dayjs(CreatedAt).format("YYYY-MM-DD HH:mm:ss")
+      formatter: ({ createdAt }) =>
+        dayjs(createdAt).format("YYYY-MM-DD HH:mm:ss")
     },
     {
       label: "操作",
@@ -148,8 +147,8 @@ export function useApi() {
     )
       .then(async () => {
         try {
-          await deleteApi({ id: row.Id });
-          message(`已删除API名称为${row.Name}的这条数据`, { type: "success" });
+          await deleteApi({ id: row.id });
+          message(`已删除API名称为${row.name}的这条数据`, { type: "success" });
           onSearch();
         } catch {
           message("删除失败", { type: "error" });
@@ -210,15 +209,15 @@ export function useApi() {
       title: `${title}API`,
       props: {
         formInline: {
-          name: row?.Name ?? "",
-          path: row?.Path ?? "",
-          method: row?.Method ?? "",
-          groupName: row?.GroupName ?? "",
-          description: row?.Description ?? "",
-          needAuth: row?.NeedAuth ?? 1,
-          rateLimit: row?.RateLimit ?? 1000,
-          sort: row?.Sort ?? 0,
-          status: row?.Status ?? 1
+          name: row?.name ?? "",
+          path: row?.path ?? "",
+          method: row?.method ?? "",
+          groupName: row?.groupName ?? "",
+          description: row?.description ?? "",
+          needAuth: row?.needAuth ?? 1,
+          rateLimit: row?.rateLimit ?? 1000,
+          sort: row?.sort ?? 0,
+          status: row?.status ?? 1
         }
       },
       width: "50%",
@@ -246,7 +245,7 @@ export function useApi() {
                 await createApi(curData);
               } else {
                 await updateApi({
-                  id: row?.Id,
+                  id: row?.id,
                   ...curData
                 });
               }

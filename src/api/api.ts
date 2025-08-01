@@ -5,28 +5,30 @@ type Result = {
   success: boolean;
   code: number;
   message: string;
+  level: string;
   data: any;
 };
 
 export type ApiModel = {
-  Id: number;
-  Name: string;
-  Path: string;
-  Method: string;
-  GroupName: string;
-  Description: string;
-  NeedAuth: number;
-  RateLimit: number;
-  Sort: number;
-  Status: number;
-  CreatedAt: Date;
-  UpdatedAt: Date;
+  id: number;
+  name: string;
+  path: string;
+  method: string;
+  groupName: string;
+  description: string;
+  needAuth: number;
+  rateLimit: number;
+  sort: number;
+  status: number;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type ApiOneResult = {
   success: boolean;
   code: number;
   message: string;
+  level: string;
   data: ApiModel;
 };
 
@@ -48,6 +50,7 @@ export type ApiListResult = {
   success: boolean;
   code: number;
   message: string;
+  level: string;
   data: {
     list: ApiModel[];
     total: number;

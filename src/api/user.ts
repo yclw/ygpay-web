@@ -10,9 +10,7 @@ export type UserInfoResult = {
     // 昵称
     nickname: string;
     // 所属角色
-    roleId: number;
-    // 权限信息
-    permissions: Array<string>;
+    roleName: string;
     // 用户名
     username: string;
     // 头像
@@ -27,12 +25,6 @@ export type UserInfoResult = {
     address: string;
     // 创建时间
     createdAt: Date;
-    // 登录次数
-    loginCount: number;
-    // 最后登录时间
-    lastLoginAt: Date;
-    // 最后登录IP
-    lastLoginIp: string;
   };
 };
 

@@ -100,9 +100,6 @@ export const refreshToken = (data: RefreshTokenRequest) => {
   return http.request<RefreshTokenResult>(
     "post",
     baseUrlApi("login/refreshToken"),
-    // "/refresh-token",
-    {
-      data
-    }
+    { data }
   );
 };
