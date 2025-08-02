@@ -94,8 +94,8 @@ defineExpose({ getRef });
           >
             <template #suffix>
               <el-icon
-                @click="togglePasswordVisibility"
                 style="cursor: pointer"
+                @click="togglePasswordVisibility"
               >
                 <component :is="showPassword ? 'View' : 'Hide'" />
               </el-icon>

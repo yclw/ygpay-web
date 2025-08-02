@@ -7,7 +7,12 @@ import { addDialog } from "@/components/ReDialog";
 import type { FormItemProps } from "./types";
 import type { PaginationProps } from "@pureadmin/table";
 import { deviceDetection } from "@pureadmin/utils";
-import { getMemberList, createMember, updateMember, deleteMember } from "@/api/member";
+import {
+  getMemberList,
+  createMember,
+  updateMember,
+  deleteMember
+} from "@/api/member";
 import { AesECBEncrypt, getDefaultEncryptKey } from "@/utils/crypto";
 import { reactive, ref, onMounted, h, toRaw } from "vue";
 
@@ -128,7 +133,9 @@ export function useMember() {
       .then(async () => {
         try {
           await deleteMember({ uid: row.uid });
-          message(`已删除用户名为${row.username}的这条数据`, { type: "success" });
+          message(`已删除用户名为${row.username}的这条数据`, {
+            type: "success"
+          });
           onSearch();
         } catch {
           message("删除失败", { type: "error" });
@@ -253,7 +260,10 @@ export function useMember() {
                   message("新增用户时密码不能为空", { type: "error" });
                   return;
                 }
-                const encryptedPassword = AesECBEncrypt(curData.password, getDefaultEncryptKey());
+                const encryptedPassword = AesECBEncrypt(
+                  curData.password,
+                  getDefaultEncryptKey()
+                );
                 await createMember({
                   ...curData,
                   password: encryptedPassword
@@ -277,7 +287,10 @@ export function useMember() {
 
                 // 只有当用户输入了新密码时才加密并发送
                 if (curData.password && curData.password.trim() !== "") {
-                  updateData.password = AesECBEncrypt(curData.password, getDefaultEncryptKey());
+                  updateData.password = AesECBEncrypt(
+                    curData.password,
+                    getDefaultEncryptKey()
+                  );
                 }
 
                 await updateMember(updateData);
