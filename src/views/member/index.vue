@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useRole } from "./utils/hook";
+import { useMember } from "./utils/hook";
 import { ref, computed, nextTick, onMounted } from "vue";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
@@ -18,7 +18,7 @@ import ArrowUp from "~icons/ep/arrow-up";
 import ArrowDown from "~icons/ep/arrow-down";
 
 defineOptions({
-  name: "SystemRole"
+  name: "SystemMember"
 });
 
 const formRef = ref();
@@ -62,7 +62,7 @@ const {
   handleSizeChange,
   handleCurrentChange,
   handleSelectionChange
-} = useRole();
+} = useMember();
 
 onMounted(() => {
   useResizeObserver(contentRef, async () => {
@@ -85,21 +85,58 @@ onMounted(() => {
       :model="form"
       class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
     >
-      <el-form-item label="角色名称：" prop="name">
+      <el-form-item label="用户名：" prop="username">
         <el-input
-          v-model="form.name"
-          placeholder="请输入角色名称"
+          v-model="form.username"
+          placeholder="请输入用户名"
           clearable
           class="w-[180px]!"
         />
       </el-form-item>
-      <el-form-item label="角色标识：" prop="key">
+      <el-form-item label="昵称：" prop="nickname">
         <el-input
-          v-model="form.key"
-          placeholder="请输入角色标识"
+          v-model="form.nickname"
+          placeholder="请输入昵称"
           clearable
           class="w-[180px]!"
         />
+      </el-form-item>
+      <el-form-item label="邮箱：" prop="email">
+        <el-input
+          v-model="form.email"
+          placeholder="请输入邮箱"
+          clearable
+          class="w-[180px]!"
+        />
+      </el-form-item>
+      <el-form-item label="手机号：" prop="mobile">
+        <el-input
+          v-model="form.mobile"
+          placeholder="请输入手机号"
+          clearable
+          class="w-[180px]!"
+        />
+      </el-form-item>
+      <el-form-item label="角色：" prop="roleId">
+        <el-input-number
+          v-model="form.roleId"
+          placeholder="请输入角色ID"
+          clearable
+          class="w-[180px]!"
+          :min="1"
+        />
+      </el-form-item>
+      <el-form-item label="性别：" prop="sex">
+        <el-select
+          v-model="form.sex"
+          placeholder="请选择性别"
+          clearable
+          class="w-[180px]!"
+        >
+          <el-option label="保密" :value="0" />
+          <el-option label="男" :value="1" />
+          <el-option label="女" :value="2" />
+        </el-select>
       </el-form-item>
       <el-form-item label="状态：" prop="status">
         <el-select
@@ -153,7 +190,7 @@ onMounted(() => {
       <!-- 列表栏 -->
       <PureTableBar
         class="w-full"
-        title="角色管理"
+        title="用户管理"
         :columns="columns"
         @refresh="onSearch"
       >
@@ -163,7 +200,7 @@ onMounted(() => {
             :icon="useRenderIcon(AddFill)"
             @click="openDialog()"
           >
-            新增角色
+            新增用户
           </el-button>
           <div class="flex items-center gap-2 ml-4">
             <span class="text-sm text-gray-600">排序：</span>
@@ -174,12 +211,16 @@ onMounted(() => {
               class="w-[120px]!"
               @change="onSearch"
             >
-              <el-option label="ID" value="id" />
-              <el-option label="角色名称" value="name" />
-              <el-option label="角色标识" value="key" />
-              <el-option label="父级ID" value="parentId" />
+              <el-option label="UID" value="uid" />
+              <el-option label="用户名" value="username" />
+              <el-option label="昵称" value="nickname" />
+              <el-option label="角色ID" value="roleId" />
+              <el-option label="邮箱" value="email" />
+              <el-option label="手机号" value="mobile" />
+              <el-option label="性别" value="sex" />
               <el-option label="排序" value="sort" />
               <el-option label="状态" value="status" />
+              <el-option label="最后活跃" value="lastActiveAt" />
               <el-option label="创建时间" value="createdAt" />
               <el-option label="更新时间" value="updatedAt" />
             </el-select>
@@ -230,7 +271,7 @@ onMounted(() => {
                 修改
               </el-button>
               <el-popconfirm
-                :title="`是否确认删除角色名称为${row.name}的这条数据`"
+                :title="`是否确认删除用户名为${row.username}的这条数据`"
                 @confirm="handleDelete(row)"
               >
                 <template #reference>

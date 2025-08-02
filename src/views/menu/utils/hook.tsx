@@ -15,6 +15,7 @@ export function useMenu() {
     name: "",
     title: "",
     path: "",
+    type: undefined,
     status: undefined,
     startDate: undefined,
     endDate: undefined
@@ -192,10 +193,22 @@ export function useMenu() {
   async function onSearch() {
     loading.value = true;
     try {
+      // 过滤掉空值的表单数据
+      const formData = toRaw(form);
+      const filteredFormData = {};
+      Object.keys(formData).forEach(key => {
+        const value = formData[key];
+        if (value !== undefined && value !== null && value !== "") {
+          filteredFormData[key] = value;
+        }
+      });
+
       const params = {
         page: pagination.currentPage,
         size: pagination.pageSize,
-        ...toRaw(form)
+        sortField: sortField.value,
+        sortDesc: sortDesc.value,
+        ...filteredFormData
       };
       const { data } = await getMenuList(params);
       dataList.value = data.list;
@@ -209,6 +222,16 @@ export function useMenu() {
 
   const resetForm = formEl => {
     if (!formEl) return;
+    // 手动重置表单数据到初始状态
+    form.name = "";
+    form.title = "";
+    form.path = "";
+    form.type = undefined;
+    form.status = undefined;
+    form.startDate = undefined;
+    form.endDate = undefined;
+
+    // 重置Element Plus表单验证状态
     formEl.resetFields();
     onSearch();
   };
@@ -246,7 +269,7 @@ export function useMenu() {
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(editForm, { ref: formRef, formInline: null }),
+      contentRenderer: () => h(editForm, { ref: formRef }),
       beforeSure: async (done, { options }) => {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;

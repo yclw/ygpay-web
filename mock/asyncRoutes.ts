@@ -36,6 +36,13 @@ const menuRouter = {
       meta: {
         title: "菜单管理"
       }
+    },
+    {
+      path: "/menu/tree",
+      name: "MenuTree",
+      meta: {
+        title: "菜单树"
+      }
     }
   ]
 };

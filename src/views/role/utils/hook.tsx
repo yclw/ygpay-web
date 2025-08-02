@@ -14,8 +14,6 @@ export function useRole() {
   const form = reactive({
     name: "",
     key: "",
-    parentId: undefined,
-    parentName: "",
     status: undefined,
     startDate: undefined,
     endDate: undefined
@@ -147,12 +145,22 @@ export function useRole() {
   async function onSearch() {
     loading.value = true;
     try {
+      // 过滤掉空值的表单数据
+      const formData = toRaw(form);
+      const filteredFormData = {};
+      Object.keys(formData).forEach(key => {
+        const value = formData[key];
+        if (value !== undefined && value !== null && value !== "") {
+          filteredFormData[key] = value;
+        }
+      });
+
       const params = {
         page: pagination.currentPage,
         size: pagination.pageSize,
-        ...toRaw(form),
         sortField: sortField.value,
-        sortDesc: sortDesc.value
+        sortDesc: sortDesc.value,
+        ...filteredFormData
       };
       const { data } = await getRoleList(params);
       dataList.value = data.list;
@@ -166,6 +174,14 @@ export function useRole() {
 
   const resetForm = formEl => {
     if (!formEl) return;
+    // 手动重置表单数据到初始状态
+    form.name = "";
+    form.key = "";
+    form.status = undefined;
+    form.startDate = undefined;
+    form.endDate = undefined;
+
+    // 重置Element Plus表单验证状态
     formEl.resetFields();
     onSearch();
   };
@@ -184,7 +200,6 @@ export function useRole() {
           key: row?.key ?? "",
           remark: row?.remark ?? "",
           parentId: row?.parentId ?? 0,
-          parentName: row?.parentName ?? "",
           sort: row?.sort ?? 0,
           status: row?.status ?? 1
         }
@@ -194,7 +209,7 @@ export function useRole() {
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(editForm, { ref: formRef, formInline: null }),
+      contentRenderer: () => h(editForm, { ref: formRef }),
       beforeSure: async (done, { options }) => {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;

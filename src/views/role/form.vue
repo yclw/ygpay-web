@@ -9,7 +9,6 @@ const props = withDefaults(defineProps<FormProps>(), {
     key: "",
     remark: "",
     parentId: 0,
-    parentName: "",
     sort: 0,
     status: 1
   })
@@ -69,19 +68,6 @@ defineExpose({ getRef });
         </el-form-item>
       </el-col>
       <el-col :span="12">
-        <el-form-item label="父级角色名称" prop="parentName">
-          <el-input
-            v-model="newFormInline.parentName"
-            clearable
-            placeholder="父级角色名称（只读显示）"
-            :disabled="true"
-          />
-        </el-form-item>
-      </el-col>
-    </el-row>
-
-    <el-row :gutter="20">
-      <el-col :span="12">
         <el-form-item label="排序" prop="sort">
           <el-input-number
             v-model="newFormInline.sort"
@@ -92,6 +78,9 @@ defineExpose({ getRef });
           />
         </el-form-item>
       </el-col>
+    </el-row>
+
+    <el-row :gutter="20">
       <el-col :span="12">
         <el-form-item label="状态" prop="status">
           <el-select

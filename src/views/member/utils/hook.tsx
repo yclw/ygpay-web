@@ -7,15 +7,18 @@ import { addDialog } from "@/components/ReDialog";
 import type { FormItemProps } from "./types";
 import type { PaginationProps } from "@pureadmin/table";
 import { deviceDetection } from "@pureadmin/utils";
-import { getApiList, createApi, updateApi, deleteApi } from "@/api/api";
+import { getMemberList, createMember, updateMember, deleteMember } from "@/api/member";
+import { AesECBEncrypt, getDefaultEncryptKey } from "@/utils/crypto";
 import { reactive, ref, onMounted, h, toRaw } from "vue";
 
-export function useApi() {
+export function useMember() {
   const form = reactive({
-    name: "",
-    path: "",
-    method: "",
-    groupName: "",
+    username: "",
+    nickname: "",
+    email: "",
+    mobile: "",
+    roleId: undefined,
+    sex: undefined,
     status: undefined,
     startDate: undefined,
     endDate: undefined
@@ -37,76 +40,46 @@ export function useApi() {
 
   const columns: TableColumnList = [
     {
-      label: "ID",
-      prop: "id",
-      width: 80
-    },
-    {
-      label: "API名称",
-      prop: "name",
-      minWidth: 120
-    },
-    {
-      label: "API路径",
-      prop: "path",
-      minWidth: 200
-    },
-    {
-      label: "请求方法",
-      prop: "method",
-      width: 100,
-      cellRenderer: scope => (
-        <el-tag
-          type={
-            scope.row.method === "GET"
-              ? "success"
-              : scope.row.method === "POST"
-                ? "primary"
-                : scope.row.method === "PUT"
-                  ? "warning"
-                  : scope.row.method === "DELETE"
-                    ? "danger"
-                    : "info"
-          }
-          size="small"
-        >
-          {scope.row.method}
-        </el-tag>
-      )
-    },
-    {
-      label: "分组名称",
-      prop: "groupName",
-      minWidth: 120
-    },
-    {
-      label: "描述",
-      prop: "description",
-      minWidth: 200,
+      label: "UID",
+      prop: "uid",
+      width: 120,
       showOverflowTooltip: true
     },
     {
-      label: "认证",
-      prop: "needAuth",
+      label: "用户名",
+      prop: "username",
+      minWidth: 120
+    },
+    {
+      label: "昵称",
+      prop: "nickname",
+      minWidth: 120
+    },
+    {
+      label: "角色",
+      prop: "roleName",
+      minWidth: 100
+    },
+    {
+      label: "邮箱",
+      prop: "email",
+      minWidth: 160,
+      showOverflowTooltip: true
+    },
+    {
+      label: "手机号",
+      prop: "mobile",
+      width: 120
+    },
+    {
+      label: "性别",
+      prop: "sex",
       width: 80,
       cellRenderer: scope => (
-        <el-tag
-          type={scope.row.needAuth === 1 ? "success" : "info"}
-          size="small"
-        >
-          {scope.row.needAuth === 1 ? "需要" : "无需"}
-        </el-tag>
+        <span>
+          {scope.row.sex === 1 ? "男" : scope.row.sex === 2 ? "女" : "保密"}
+        </span>
       )
-    },
-    {
-      label: "限流",
-      prop: "rateLimit",
-      width: 80
-    },
-    {
-      label: "排序",
-      prop: "sort",
-      width: 80
     },
     {
       label: "状态",
@@ -117,6 +90,13 @@ export function useApi() {
           {scope.row.status === 1 ? "启用" : "禁用"}
         </el-tag>
       )
+    },
+    {
+      label: "最后活跃",
+      prop: "lastActiveAt",
+      minWidth: 160,
+      formatter: ({ lastActiveAt }) =>
+        lastActiveAt ? dayjs(lastActiveAt).format("YYYY-MM-DD HH:mm:ss") : "-"
     },
     {
       label: "创建时间",
@@ -135,7 +115,7 @@ export function useApi() {
 
   function handleDelete(row) {
     ElMessageBox.confirm(
-      `确认要删除API名称为<strong style='color:var(--el-color-primary)'>${row.Name}</strong>的这条数据吗？`,
+      `确认要删除用户名为<strong style='color:var(--el-color-primary)'>${row.username}</strong>的这条数据吗？`,
       "系统提示",
       {
         confirmButtonText: "确定",
@@ -147,8 +127,8 @@ export function useApi() {
     )
       .then(async () => {
         try {
-          await deleteApi({ id: row.id });
-          message(`已删除API名称为${row.name}的这条数据`, { type: "success" });
+          await deleteMember({ uid: row.uid });
+          message(`已删除用户名为${row.username}的这条数据`, { type: "success" });
           onSearch();
         } catch {
           message("删除失败", { type: "error" });
@@ -193,11 +173,11 @@ export function useApi() {
         sortDesc: sortDesc.value,
         ...filteredFormData
       };
-      const { data } = await getApiList(params);
+      const { data } = await getMemberList(params);
       dataList.value = data.list;
       pagination.total = data.total;
     } catch {
-      message("获取API列表失败", { type: "error" });
+      message("获取用户列表失败", { type: "error" });
     } finally {
       loading.value = false;
     }
@@ -206,10 +186,12 @@ export function useApi() {
   const resetForm = formEl => {
     if (!formEl) return;
     // 手动重置表单数据到初始状态
-    form.name = "";
-    form.path = "";
-    form.method = "";
-    form.groupName = "";
+    form.username = "";
+    form.nickname = "";
+    form.email = "";
+    form.mobile = "";
+    form.roleId = undefined;
+    form.sex = undefined;
     form.status = undefined;
     form.startDate = undefined;
     form.endDate = undefined;
@@ -226,21 +208,25 @@ export function useApi() {
 
   function openDialog(title = "新增", row?: any) {
     addDialog({
-      title: `${title}API`,
+      title: `${title}用户`,
       props: {
         formInline: {
-          name: row?.name ?? "",
-          path: row?.path ?? "",
-          method: row?.method ?? "",
-          groupName: row?.groupName ?? "",
-          description: row?.description ?? "",
-          needAuth: row?.needAuth ?? 1,
-          rateLimit: row?.rateLimit ?? 1000,
+          uid: row?.uid ?? "",
+          username: row?.username ?? "",
+          nickname: row?.nickname ?? "",
+          password: "", // 新增时为空，修改时也为空表示不更改
+          roleId: row?.roleId ?? undefined,
+          avatar: row?.avatar ?? "",
+          sex: row?.sex ?? undefined,
+          email: row?.email ?? "",
+          mobile: row?.mobile ?? "",
+          address: row?.address ?? "",
+          remark: row?.remark ?? "",
           sort: row?.sort ?? 0,
           status: row?.status ?? 1
         }
       },
-      width: "50%",
+      width: "60%",
       draggable: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
@@ -251,7 +237,7 @@ export function useApi() {
         const curData = options.props.formInline as FormItemProps;
 
         function chores() {
-          message(`您${title}了API名称为${curData.name}的这条数据`, {
+          message(`您${title}了用户名为${curData.username}的这条数据`, {
             type: "success"
           });
           done(); // 关闭弹框
@@ -262,12 +248,39 @@ export function useApi() {
           if (valid) {
             try {
               if (title === "新增") {
-                await createApi(curData);
-              } else {
-                await updateApi({
-                  id: row?.id,
-                  ...curData
+                // 新增用户时密码必须加密
+                if (!curData.password) {
+                  message("新增用户时密码不能为空", { type: "error" });
+                  return;
+                }
+                const encryptedPassword = AesECBEncrypt(curData.password, getDefaultEncryptKey());
+                await createMember({
+                  ...curData,
+                  password: encryptedPassword
                 });
+              } else {
+                // 修改用户
+                const updateData: any = {
+                  uid: row?.uid,
+                  username: curData.username,
+                  nickname: curData.nickname,
+                  roleId: curData.roleId,
+                  avatar: curData.avatar,
+                  sex: curData.sex,
+                  email: curData.email,
+                  mobile: curData.mobile,
+                  address: curData.address,
+                  remark: curData.remark,
+                  sort: curData.sort,
+                  status: curData.status
+                };
+
+                // 只有当用户输入了新密码时才加密并发送
+                if (curData.password && curData.password.trim() !== "") {
+                  updateData.password = AesECBEncrypt(curData.password, getDefaultEncryptKey());
+                }
+
+                await updateMember(updateData);
               }
               chores();
             } catch {

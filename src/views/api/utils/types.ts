@@ -22,7 +22,7 @@ interface FormItemProps {
 }
 
 interface FormProps {
-  formInline: FormItemProps;
+  formInline?: FormItemProps;
 }
 
 export type { FormItemProps, FormProps };

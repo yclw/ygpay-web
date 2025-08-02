@@ -5,6 +5,7 @@ type Result = {
   success: boolean;
   code: number;
   message: string;
+  level: string;
   data: any;
 };
 
@@ -34,6 +35,7 @@ export type MenuOneResult = {
   success: boolean;
   code: number;
   message: string;
+  level: string;
   data: MenuModel;
 };
 
@@ -41,12 +43,21 @@ export type MenuListRequest = {
   page: number;
   size: number;
   status?: number;
+  type?: number;
+  name?: string;
+  path?: string;
+  title?: string;
+  startDate?: Date;
+  endDate?: Date;
+  sortField?: string;
+  sortDesc?: boolean;
 };
 
 export type MenuListResult = {
   success: boolean;
   code: number;
   message: string;
+  level: string;
   data: {
     list: MenuModel[];
     total: number;
@@ -90,6 +101,23 @@ export type MenuUpdateRequest = {
   status: number;
 };
 
+export type MenuTreeModel = {
+  id: number;
+  pid: number;
+  title: string;
+  children: MenuTreeModel[];
+};
+
+export type MenuTreeResult = {
+  success: boolean;
+  code: number;
+  message: string;
+  level: string;
+  data: {
+    menuTree: MenuTreeModel[];
+  };
+};
+
 // 获取菜单详情
 export const getMenuOne = (params: { id: number }) => {
   return http.request<MenuOneResult>("get", baseUrlApi("menu/one"), { params });
@@ -115,4 +143,9 @@ export const updateMenu = (data: MenuUpdateRequest) => {
 // 删除菜单
 export const deleteMenu = (data: { id: number }) => {
   return http.request<Result>("delete", baseUrlApi("menu/delete"), { data });
+};
+
+// 获取菜单树
+export const getMenuTree = () => {
+  return http.request<MenuTreeResult>("get", baseUrlApi("menu/tree"));
 };

@@ -109,6 +109,18 @@ onMounted(() => {
           class="w-[180px]!"
         />
       </el-form-item>
+      <el-form-item label="菜单类型：" prop="type">
+        <el-select
+          v-model="form.type"
+          placeholder="请选择菜单类型"
+          clearable
+          class="w-[180px]!"
+        >
+          <el-option label="目录" :value="0" />
+          <el-option label="菜单" :value="1" />
+          <el-option label="外链" :value="2" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="状态：" prop="status">
         <el-select
           v-model="form.status"
@@ -186,7 +198,8 @@ onMounted(() => {
               <el-option label="菜单名称" value="name" />
               <el-option label="菜单标题" value="title" />
               <el-option label="菜单路径" value="path" />
-              <el-option label="父级ID" value="pid" />
+              <el-option label="菜单类型" value="type" />
+              <el-option label="父级ID" value="parentId" />
               <el-option label="排序" value="sort" />
               <el-option label="状态" value="status" />
               <el-option label="创建时间" value="createdAt" />

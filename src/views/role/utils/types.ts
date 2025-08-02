@@ -11,8 +11,6 @@ interface FormItemProps {
   remark: string;
   /** 父级角色ID */
   parentId: number;
-  /** 父级角色名称 */
-  parentName: string;
   /** 排序 */
   sort: number;
   /** 状态 */
@@ -20,7 +18,7 @@ interface FormItemProps {
 }
 
 interface FormProps {
-  formInline: FormItemProps;
+  formInline?: FormItemProps;
 }
 
 export type { FormItemProps, FormProps };
