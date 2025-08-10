@@ -19,8 +19,8 @@ interface SearchFormProps {
 }
 
 interface FormItemProps {
-  /** 菜单ID */
-  id?: number;
+  /** 菜单UID */
+  menuUid?: string;
   /** 菜单类型: 0目录 1菜单 2外链 */
   type: number;
   /** 菜单名称 */
@@ -39,8 +39,8 @@ interface FormItemProps {
   showLink: boolean;
   /** 是否缓存 */
   keepAlive: boolean;
-  /** 父级ID */
-  parentId: number;
+  /** 父级菜单UID */
+  parentUid?: string;
   /** 父级菜单标题 */
   parentTitle: string;
   /** 重定向路径 */

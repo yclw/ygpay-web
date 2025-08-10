@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import editForm from "../form.vue";
+import editForm from "../components/form.vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import { usePublicHooks } from "./hooks";
@@ -7,7 +7,13 @@ import { addDialog } from "@/components/ReDialog";
 import type { FormItemProps } from "./types";
 import type { PaginationProps } from "@pureadmin/table";
 import { deviceDetection } from "@pureadmin/utils";
-import { getApiList, createApi, updateApi, deleteApi } from "@/api/api";
+import {
+  getApiList,
+  getApiOne,
+  createApi,
+  updateApi,
+  deleteApi
+} from "@/api/api";
 import { reactive, ref, onMounted, h, toRaw } from "vue";
 
 export function useApi() {
@@ -37,9 +43,9 @@ export function useApi() {
 
   const columns: TableColumnList = [
     {
-      label: "ID",
-      prop: "id",
-      width: 80
+      label: "API UID",
+      prop: "apiUid",
+      width: 120
     },
     {
       label: "API名称",
@@ -147,7 +153,7 @@ export function useApi() {
     )
       .then(async () => {
         try {
-          await deleteApi({ id: row.id });
+          await deleteApi({ apiUid: row.apiUid });
           message(`已删除API名称为${row.name}的这条数据`, { type: "success" });
           onSearch();
         } catch {
@@ -224,21 +230,44 @@ export function useApi() {
     onSearch();
   }
 
-  function openDialog(title = "新增", row?: any) {
+  async function openDialog(title = "新增", row?: any) {
+    let formData = {
+      name: "",
+      path: "",
+      method: "",
+      groupName: "",
+      description: "",
+      needAuth: 1,
+      rateLimit: 1000,
+      sort: 0,
+      status: 1
+    };
+
+    // 如果是编辑模式，通过getOne接口获取完整数据
+    if (title !== "新增" && row?.apiUid) {
+      try {
+        const { data } = await getApiOne({ apiUid: row.apiUid });
+        formData = {
+          name: data.name,
+          path: data.path,
+          method: data.method,
+          groupName: data.groupName,
+          description: data.description,
+          needAuth: data.needAuth,
+          rateLimit: data.rateLimit,
+          sort: data.sort,
+          status: data.status
+        };
+      } catch {
+        message("获取API详情失败", { type: "error" });
+        return;
+      }
+    }
+
     addDialog({
       title: `${title}API`,
       props: {
-        formInline: {
-          name: row?.name ?? "",
-          path: row?.path ?? "",
-          method: row?.method ?? "",
-          groupName: row?.groupName ?? "",
-          description: row?.description ?? "",
-          needAuth: row?.needAuth ?? 1,
-          rateLimit: row?.rateLimit ?? 1000,
-          sort: row?.sort ?? 0,
-          status: row?.status ?? 1
-        }
+        formInline: formData
       },
       width: "50%",
       draggable: true,
@@ -265,7 +294,7 @@ export function useApi() {
                 await createApi(curData);
               } else {
                 await updateApi({
-                  id: row?.id,
+                  apiUid: row?.apiUid,
                   ...curData
                 });
               }

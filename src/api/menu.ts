@@ -10,7 +10,7 @@ type Result = {
 };
 
 export type MenuModel = {
-  id: number; //菜单ID
+  menuUid: string; //菜单UID
   type: number; //菜单类型: 0目录 1菜单 2外链
   name: string; //菜单名称
   path: string; //菜单路径
@@ -20,7 +20,7 @@ export type MenuModel = {
   showParent: boolean; //是否显示父菜单
   showLink: boolean; //是否显示该菜单
   keepAlive: boolean; //是否缓存
-  parentId: number; //父级ID
+  parentUid: string; //父级菜单UID
   parentTitle: string; //父级菜单标题
   redirect: string; //重定向
   component: string; //组件路径
@@ -29,6 +29,7 @@ export type MenuModel = {
   status: number; //状态: 0禁用 1启用
   createdAt: Date; //创建时间
   updatedAt: Date; //更新时间
+  children?: MenuModel[];
 };
 
 export type MenuOneResult = {
@@ -39,20 +40,6 @@ export type MenuOneResult = {
   data: MenuModel;
 };
 
-export type MenuListRequest = {
-  page: number;
-  size: number;
-  status?: number;
-  type?: number;
-  name?: string;
-  path?: string;
-  title?: string;
-  startDate?: Date;
-  endDate?: Date;
-  sortField?: string;
-  sortDesc?: boolean;
-};
-
 export type MenuListResult = {
   success: boolean;
   code: number;
@@ -60,7 +47,7 @@ export type MenuListResult = {
   level: string;
   data: {
     list: MenuModel[];
-    total: number;
+    tree: MenuModel[];
   };
 };
 
@@ -74,7 +61,7 @@ export type MenuCreateRequest = {
   showParent: boolean;
   showLink: boolean;
   keepAlive: boolean;
-  parentId: number;
+  parentUid?: string;
   redirect: string;
   component: string;
   frameSrc: string;
@@ -83,7 +70,7 @@ export type MenuCreateRequest = {
 };
 
 export type MenuUpdateRequest = {
-  id: number;
+  menuUid: string;
   type: number;
   name: string;
   path: string;
@@ -93,7 +80,7 @@ export type MenuUpdateRequest = {
   showParent: boolean;
   showLink: boolean;
   keepAlive: boolean;
-  parentId: number;
+  parentUid?: string;
   redirect: string;
   component: string;
   frameSrc: string;
@@ -101,33 +88,14 @@ export type MenuUpdateRequest = {
   status: number;
 };
 
-export type MenuTreeModel = {
-  id: number;
-  pid: number;
-  title: string;
-  children: MenuTreeModel[];
-};
-
-export type MenuTreeResult = {
-  success: boolean;
-  code: number;
-  message: string;
-  level: string;
-  data: {
-    menuTree: MenuTreeModel[];
-  };
-};
-
 // 获取菜单详情
-export const getMenuOne = (params: { id: number }) => {
+export const getMenuOne = (params: { menuUid: string }) => {
   return http.request<MenuOneResult>("get", baseUrlApi("menu/one"), { params });
 };
 
 // 获取菜单列表
-export const getMenuList = (params: MenuListRequest) => {
-  return http.request<MenuListResult>("get", baseUrlApi("menu/list"), {
-    params
-  });
+export const getMenuList = () => {
+  return http.request<MenuListResult>("get", baseUrlApi("menu/list"));
 };
 
 // 创建菜单
@@ -141,11 +109,6 @@ export const updateMenu = (data: MenuUpdateRequest) => {
 };
 
 // 删除菜单
-export const deleteMenu = (data: { id: number }) => {
+export const deleteMenu = (data: { menuUid: string }) => {
   return http.request<Result>("delete", baseUrlApi("menu/delete"), { data });
-};
-
-// 获取菜单树
-export const getMenuTree = () => {
-  return http.request<MenuTreeResult>("get", baseUrlApi("menu/tree"));
 };

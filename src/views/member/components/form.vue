@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { formRules } from "./utils/rule";
-import { FormProps } from "./utils/types";
+import { formRules } from "../utils/rule";
+import { FormProps } from "../utils/types";
 import { getRoleList } from "@/api/role";
 
 const props = withDefaults(defineProps<FormProps>(), {

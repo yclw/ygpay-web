@@ -1,46 +1,39 @@
 import dayjs from "dayjs";
-import editForm from "../form.vue";
+import editForm from "../components/form.vue";
+import detailForm from "../components/detail.vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import { usePublicHooks } from "./hooks";
 import { addDialog } from "@/components/ReDialog";
 import type { FormItemProps } from "./types";
-import type { PaginationProps } from "@pureadmin/table";
+import IconifyIconOnline from "@/components/ReIcon/src/iconifyIconOnline";
+
 import { deviceDetection } from "@pureadmin/utils";
-import { getMenuList, createMenu, updateMenu, deleteMenu } from "@/api/menu";
-import { reactive, ref, onMounted, h, toRaw } from "vue";
+// import { handleTree } from "@/utils/tree";
+import {
+  getMenuList,
+  getMenuOne,
+  createMenu,
+  updateMenu,
+  deleteMenu
+} from "@/api/menu";
+import { reactive, ref, onMounted, h } from "vue";
 
 export function useMenu() {
   const form = reactive({
-    name: "",
-    title: "",
-    path: "",
-    type: undefined,
-    status: undefined,
-    startDate: undefined,
-    endDate: undefined
+    title: ""
   });
 
-  // 排序状态独立管理
-  const sortField = ref("sort");
-  const sortDesc = ref(false);
   const formRef = ref();
   const dataList = ref([]);
   const loading = ref(true);
   const { tagStyle } = usePublicHooks();
 
-  const pagination = reactive<PaginationProps>({
-    total: 0,
-    pageSize: 10,
-    currentPage: 1,
-    background: true
-  });
-
   const columns: TableColumnList = [
     {
-      label: "ID",
-      prop: "id",
-      width: 80
+      label: "菜单UID",
+      prop: "menuUid",
+      width: 120
     },
     {
       label: "菜单名称",
@@ -63,7 +56,15 @@ export function useMenu() {
       width: 100,
       cellRenderer: scope => (
         <div class="flex items-center justify-center">
-          {scope.row.icon && <i class={scope.row.icon} />}
+          {scope.row.icon ? (
+            <IconifyIconOnline
+              icon={scope.row.icon}
+              width="20px"
+              height="20px"
+            />
+          ) : (
+            <span class="text-gray-400">-</span>
+          )}
         </div>
       )
     },
@@ -86,11 +87,6 @@ export function useMenu() {
       prop: "component",
       minWidth: 200,
       showOverflowTooltip: true
-    },
-    {
-      label: "父级ID",
-      prop: "parentId",
-      width: 80
     },
     {
       label: "父级菜单标题",
@@ -145,7 +141,7 @@ export function useMenu() {
     {
       label: "操作",
       fixed: "right",
-      width: 180,
+      width: 200,
       slot: "operation"
     }
   ];
@@ -164,7 +160,7 @@ export function useMenu() {
     )
       .then(async () => {
         try {
-          await deleteMenu({ id: row.id });
+          await deleteMenu({ menuUid: row.menuUid });
           message(`已删除菜单名称为${row.name}的这条数据`, { type: "success" });
           onSearch();
         } catch {
@@ -176,16 +172,6 @@ export function useMenu() {
       });
   }
 
-  function handleSizeChange(val: number) {
-    pagination.pageSize = val;
-    onSearch();
-  }
-
-  function handleCurrentChange(val: number) {
-    pagination.currentPage = val;
-    onSearch();
-  }
-
   function handleSelectionChange(val) {
     console.log("handleSelectionChange", val);
   }
@@ -193,26 +179,17 @@ export function useMenu() {
   async function onSearch() {
     loading.value = true;
     try {
-      // 过滤掉空值的表单数据
-      const formData = toRaw(form);
-      const filteredFormData = {};
-      Object.keys(formData).forEach(key => {
-        const value = formData[key];
-        if (value !== undefined && value !== null && value !== "") {
-          filteredFormData[key] = value;
-        }
-      });
+      const { data } = await getMenuList();
+      let filteredList = data.tree;
 
-      const params = {
-        page: pagination.currentPage,
-        size: pagination.pageSize,
-        sortField: sortField.value,
-        sortDesc: sortDesc.value,
-        ...filteredFormData
-      };
-      const { data } = await getMenuList(params);
-      dataList.value = data.list;
-      pagination.total = data.total;
+      // 按标题筛选
+      if (form.title) {
+        filteredList = filteredList.filter(item =>
+          item.title.toLowerCase().includes(form.title.toLowerCase())
+        );
+      }
+
+      dataList.value = filteredList;
     } catch {
       message("获取菜单列表失败", { type: "error" });
     } finally {
@@ -223,46 +200,81 @@ export function useMenu() {
   const resetForm = formEl => {
     if (!formEl) return;
     // 手动重置表单数据到初始状态
-    form.name = "";
     form.title = "";
-    form.path = "";
-    form.type = undefined;
-    form.status = undefined;
-    form.startDate = undefined;
-    form.endDate = undefined;
 
     // 重置Element Plus表单验证状态
     formEl.resetFields();
     onSearch();
   };
 
-  function toggleSortOrder() {
-    sortDesc.value = !sortDesc.value;
-    onSearch();
+  function openDetailDialog(row: any) {
+    addDialog({
+      title: "菜单详情",
+      props: {
+        menuUid: row.menuUid
+      },
+      width: "60%",
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      hideFooter: true,
+      contentRenderer: () => h(detailForm, { menuUid: row.menuUid })
+    });
   }
 
-  function openDialog(title = "新增", row?: any) {
+  async function openDialog(title = "新增", row?: any) {
+    let formData = {
+      type: 1,
+      name: "",
+      path: "",
+      title: "",
+      icon: "",
+      sort: 10,
+      showParent: false,
+      showLink: true,
+      keepAlive: false,
+      parentUid: undefined,
+      parentTitle: "",
+      redirect: "",
+      component: "",
+      frameSrc: "",
+      url: "",
+      status: 1
+    };
+
+    // 如果是编辑模式，通过getOne接口获取完整数据
+    if (title !== "新增" && row?.menuUid) {
+      try {
+        const { data } = await getMenuOne({ menuUid: row.menuUid });
+        formData = {
+          type: data.type,
+          name: data.name,
+          path: data.path,
+          title: data.title,
+          icon: data.icon,
+          sort: data.sort,
+          showParent: data.showParent,
+          showLink: data.showLink,
+          keepAlive: data.keepAlive,
+          parentUid: data.parentUid,
+          parentTitle: data.parentTitle,
+          redirect: data.redirect,
+          component: data.component,
+          frameSrc: data.frameSrc,
+          url: data.url,
+          status: data.status
+        };
+      } catch {
+        message("获取菜单详情失败", { type: "error" });
+        return;
+      }
+    }
+
     addDialog({
       title: `${title}菜单`,
       props: {
-        formInline: {
-          type: row?.type ?? 1,
-          name: row?.name ?? "",
-          path: row?.path ?? "",
-          title: row?.title ?? "",
-          icon: row?.icon ?? "",
-          sort: row?.sort ?? 10,
-          showParent: row?.showParent ?? false,
-          showLink: row?.showLink ?? true,
-          keepAlive: row?.keepAlive ?? false,
-          parentId: row?.parentId ?? 0,
-          parentTitle: row?.parentTitle ?? "",
-          redirect: row?.redirect ?? "",
-          component: row?.component ?? "",
-          frameSrc: row?.frameSrc ?? "",
-          url: row?.url ?? "",
-          status: row?.status ?? 1
-        }
+        formInline: formData
       },
       width: "50%",
       draggable: true,
@@ -289,7 +301,7 @@ export function useMenu() {
                 await createMenu(curData);
               } else {
                 await updateMenu({
-                  id: row?.id,
+                  menuUid: row?.menuUid,
                   ...curData
                 });
               }
@@ -312,16 +324,11 @@ export function useMenu() {
     loading,
     columns,
     dataList,
-    pagination,
-    sortField,
-    sortDesc,
     onSearch,
     resetForm,
-    toggleSortOrder,
     openDialog,
+    openDetailDialog,
     handleDelete,
-    handleSizeChange,
-    handleCurrentChange,
     handleSelectionChange
   };
 }

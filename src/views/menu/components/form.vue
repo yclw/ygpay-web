@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { baseFormRules, componentRule } from "./utils/rule";
-import { FormProps } from "./utils/types";
+import { baseFormRules, componentRule } from "../utils/rule";
+import { FormProps } from "../utils/types";
 import type { FormRules } from "element-plus";
+import { IconSelect } from "@/components/ReIcon";
+import MenuSelect from "./menu-select.vue";
 
 const props = withDefaults(defineProps<FormProps>(), {
   formInline: () => ({
@@ -15,7 +17,7 @@ const props = withDefaults(defineProps<FormProps>(), {
     showParent: false,
     showLink: true,
     keepAlive: false,
-    parentId: 0,
+    parentUid: undefined,
     parentTitle: "",
     redirect: "",
     component: "",
@@ -32,15 +34,6 @@ const newFormInline = ref(props.formInline);
 const isDirectory = computed(() => newFormInline.value.type === 0);
 const isMenu = computed(() => newFormInline.value.type === 1);
 const isExternalLink = computed(() => newFormInline.value.type === 2);
-
-// 动态字段标签
-const nameLabel = computed(() => {
-  return isExternalLink.value ? "外链地址" : "菜单名称";
-});
-
-const namePlaceholder = computed(() => {
-  return isExternalLink.value ? "请输入外链地址" : "请输入菜单名称";
-});
 
 // 动态验证规则
 const dynamicRules = computed(() => {
@@ -85,12 +78,11 @@ defineExpose({ getRef });
         </el-form-item>
       </el-col>
       <el-col :span="12">
-        <el-form-item label="父级ID" prop="parentId">
-          <el-input-number
-            v-model="newFormInline.parentId"
-            :min="0"
-            placeholder="请输入父级ID"
-            style="width: 100%"
+        <el-form-item label="父级菜单" prop="parentUid">
+          <MenuSelect
+            v-model="newFormInline.parentUid"
+            placeholder="请选择父级菜单(可为空)"
+            clearable
           />
         </el-form-item>
       </el-col>
@@ -98,11 +90,11 @@ defineExpose({ getRef });
 
     <el-row :gutter="20">
       <el-col :span="12">
-        <el-form-item :label="nameLabel" prop="name">
+        <el-form-item label="菜单名称" prop="name">
           <el-input
             v-model="newFormInline.name"
             clearable
-            :placeholder="namePlaceholder"
+            placeholder="请输入菜单名称"
           />
         </el-form-item>
       </el-col>
@@ -129,11 +121,7 @@ defineExpose({ getRef });
       </el-col>
       <el-col :span="12">
         <el-form-item label="菜单图标" prop="icon">
-          <el-input
-            v-model="newFormInline.icon"
-            clearable
-            placeholder="请输入图标类名，如：el-icon-user"
-          />
+          <IconSelect v-model="newFormInline.icon" class="w-full" />
         </el-form-item>
       </el-col>
     </el-row>
@@ -143,6 +131,14 @@ defineExpose({ getRef });
         v-model="newFormInline.component"
         clearable
         placeholder="请输入组件路径，如：user/index"
+      />
+    </el-form-item>
+
+    <el-form-item v-if="isExternalLink" label="外链地址" prop="url">
+      <el-input
+        v-model="newFormInline.url"
+        clearable
+        placeholder="请输入外链地址，如：https://example.com"
       />
     </el-form-item>
 

@@ -1,36 +1,46 @@
 import dayjs from "dayjs";
-import editForm from "../form.vue";
+import editForm from "../components/form.vue";
+import apiPermissionForm from "../components/api-permission.vue";
+import menuPermissionForm from "../components/menu-permission.vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import { usePublicHooks } from "./hooks";
 import { addDialog } from "@/components/ReDialog";
 import type { FormItemProps } from "./types";
-import type { PaginationProps } from "@pureadmin/table";
+
 import { deviceDetection } from "@pureadmin/utils";
-import { getRoleList, createRole, updateRole, deleteRole } from "@/api/role";
-import { reactive, ref, onMounted, h, toRaw } from "vue";
+import {
+  getRoleList,
+  getRoleOne,
+  createRole,
+  updateRole,
+  deleteRole
+} from "@/api/role";
+import { syncRoleApi, refreshEnforcer } from "@/api/casbin";
+import { reactive, ref, onMounted, h } from "vue";
 
 export function useRole() {
   const form = reactive({
-    name: "",
-    key: "",
-    status: undefined,
-    startDate: undefined,
-    endDate: undefined
+    name: ""
   });
 
-  const sortField = ref("sort");
-  const sortDesc = ref(false);
   const formRef = ref();
   const dataList = ref([]);
   const loading = ref(true);
   const { tagStyle } = usePublicHooks();
 
-  const pagination = reactive<PaginationProps>({
-    total: 0,
-    pageSize: 10,
-    currentPage: 1,
-    background: true
+  // API权限对话框相关状态
+  const apiPermissionDialogVisible = ref(false);
+  const currentRoleForApiPermission = ref<{ id: number; name: string }>({
+    id: 0,
+    name: ""
+  });
+
+  // 菜单权限对话框相关状态
+  const menuPermissionDialogVisible = ref(false);
+  const currentRoleForMenuPermission = ref<{ id: number; name: string }>({
+    id: 0,
+    name: ""
   });
 
   const columns: TableColumnList = [
@@ -97,7 +107,7 @@ export function useRole() {
     {
       label: "操作",
       fixed: "right",
-      width: 180,
+      width: 200,
       slot: "operation"
     }
   ];
@@ -128,16 +138,6 @@ export function useRole() {
       });
   }
 
-  function handleSizeChange(val: number) {
-    pagination.pageSize = val;
-    onSearch();
-  }
-
-  function handleCurrentChange(val: number) {
-    pagination.currentPage = val;
-    onSearch();
-  }
-
   function handleSelectionChange(val) {
     console.log("handleSelectionChange", val);
   }
@@ -145,26 +145,17 @@ export function useRole() {
   async function onSearch() {
     loading.value = true;
     try {
-      // 过滤掉空值的表单数据
-      const formData = toRaw(form);
-      const filteredFormData = {};
-      Object.keys(formData).forEach(key => {
-        const value = formData[key];
-        if (value !== undefined && value !== null && value !== "") {
-          filteredFormData[key] = value;
-        }
-      });
+      const { data } = await getRoleList();
+      let filteredList = data.list;
 
-      const params = {
-        page: pagination.currentPage,
-        size: pagination.pageSize,
-        sortField: sortField.value,
-        sortDesc: sortDesc.value,
-        ...filteredFormData
-      };
-      const { data } = await getRoleList(params);
-      dataList.value = data.list;
-      pagination.total = data.total;
+      // 按名称筛选
+      if (form.name) {
+        filteredList = filteredList.filter(item =>
+          item.name.toLowerCase().includes(form.name.toLowerCase())
+        );
+      }
+
+      dataList.value = filteredList;
     } catch {
       message("获取角色列表失败", { type: "error" });
     } finally {
@@ -176,33 +167,44 @@ export function useRole() {
     if (!formEl) return;
     // 手动重置表单数据到初始状态
     form.name = "";
-    form.key = "";
-    form.status = undefined;
-    form.startDate = undefined;
-    form.endDate = undefined;
 
     // 重置Element Plus表单验证状态
     formEl.resetFields();
     onSearch();
   };
 
-  function toggleSortOrder() {
-    sortDesc.value = !sortDesc.value;
-    onSearch();
-  }
+  async function openDialog(title = "新增", row?: any) {
+    let formData = {
+      name: "",
+      key: "",
+      remark: "",
+      parentId: 0,
+      sort: 0,
+      status: 1
+    };
 
-  function openDialog(title = "新增", row?: any) {
+    // 如果是编辑模式，通过getOne接口获取完整数据
+    if (title !== "新增" && row?.id) {
+      try {
+        const { data } = await getRoleOne({ id: row.id });
+        formData = {
+          name: data.name,
+          key: data.key,
+          remark: data.remark,
+          parentId: data.parentId,
+          sort: data.sort,
+          status: data.status
+        };
+      } catch {
+        message("获取角色详情失败", { type: "error" });
+        return;
+      }
+    }
+
     addDialog({
       title: `${title}角色`,
       props: {
-        formInline: {
-          name: row?.name ?? "",
-          key: row?.key ?? "",
-          remark: row?.remark ?? "",
-          parentId: row?.parentId ?? 0,
-          sort: row?.sort ?? 0,
-          status: row?.status ?? 1
-        }
+        formInline: formData
       },
       width: "50%",
       draggable: true,
@@ -243,6 +245,129 @@ export function useRole() {
     });
   }
 
+  // 打开API权限对话框
+  function openApiPermissionDialog(row: any) {
+    let apiFormRef: any = null;
+
+    addDialog({
+      title: `设置 ${row.name} 的API权限`,
+      props: {
+        roleId: row.id,
+        roleName: row.name
+      },
+      width: "70%",
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: ({ options }) =>
+        h(apiPermissionForm, {
+          roleId: options.props.roleId,
+          roleName: options.props.roleName,
+          ref: (el: any) => {
+            apiFormRef = el;
+          },
+          onConfirm: () => {
+            // API权限更新成功后的回调
+          },
+          onClose: () => {
+            // 对话框关闭回调
+          }
+        }),
+      beforeSure: async done => {
+        // 调用API权限组件的确认方法
+        if (apiFormRef && apiFormRef.handleConfirm) {
+          await apiFormRef.handleConfirm();
+        }
+        done();
+      }
+    });
+  }
+
+  // 打开菜单权限对话框
+  function openMenuPermissionDialog(row: any) {
+    let menuFormRef: any = null;
+
+    addDialog({
+      title: `设置 ${row.name} 的菜单权限`,
+      props: {
+        roleId: row.id,
+        roleName: row.name
+      },
+      width: "60%",
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: ({ options }) =>
+        h(menuPermissionForm, {
+          roleId: options.props.roleId,
+          roleName: options.props.roleName,
+          ref: (el: any) => {
+            menuFormRef = el;
+          },
+          onConfirm: () => {
+            // 菜单权限更新成功后的回调
+          },
+          onClose: () => {
+            // 对话框关闭回调
+          }
+        }),
+      beforeSure: async done => {
+        // 调用菜单权限组件的确认方法
+        if (menuFormRef && menuFormRef.handleConfirm) {
+          await menuFormRef.handleConfirm();
+        }
+        done();
+      }
+    });
+  }
+
+  // 旧的函数保持兼容性（暂时保留）
+  function closeApiPermissionDialog() {
+    apiPermissionDialogVisible.value = false;
+    currentRoleForApiPermission.value = { id: 0, name: "" };
+  }
+
+  function onApiPermissionUpdated() {
+    closeApiPermissionDialog();
+  }
+
+  function closeMenuPermissionDialog() {
+    menuPermissionDialogVisible.value = false;
+    currentRoleForMenuPermission.value = { id: 0, name: "" };
+  }
+
+  function onMenuPermissionUpdated() {
+    closeMenuPermissionDialog();
+  }
+
+  // 同步角色API到Casbin
+  async function handleSyncCasbin() {
+    try {
+      loading.value = true;
+      await syncRoleApi();
+      message("同步Casbin成功", { type: "success" });
+    } catch {
+      message("同步Casbin失败", { type: "error" });
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // 刷新Casbin Enforcer
+  async function handleRefreshCasbin() {
+    try {
+      loading.value = true;
+      await refreshEnforcer();
+      message("刷新Casbin成功", { type: "success" });
+    } catch {
+      message("刷新Casbin失败", { type: "error" });
+    } finally {
+      loading.value = false;
+    }
+  }
+
   onMounted(() => {
     onSearch();
   });
@@ -252,16 +377,25 @@ export function useRole() {
     loading,
     columns,
     dataList,
-    pagination,
-    sortField,
-    sortDesc,
     onSearch,
     resetForm,
-    toggleSortOrder,
     openDialog,
     handleDelete,
-    handleSizeChange,
-    handleCurrentChange,
-    handleSelectionChange
+    handleSelectionChange,
+    // API权限相关
+    apiPermissionDialogVisible,
+    currentRoleForApiPermission,
+    openApiPermissionDialog,
+    closeApiPermissionDialog,
+    onApiPermissionUpdated,
+    // 菜单权限相关
+    menuPermissionDialogVisible,
+    currentRoleForMenuPermission,
+    openMenuPermissionDialog,
+    closeMenuPermissionDialog,
+    onMenuPermissionUpdated,
+    // Casbin相关
+    handleSyncCasbin,
+    handleRefreshCasbin
   };
 }

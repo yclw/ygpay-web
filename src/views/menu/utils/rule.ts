@@ -7,7 +7,6 @@ export const baseFormRules = reactive(<FormRules>{
   path: [{ required: true, message: "路径为必填项", trigger: "blur" }],
   title: [{ required: true, message: "标题为必填项", trigger: "blur" }],
   sort: [{ required: true, message: "排序为必填项", trigger: "blur" }],
-  parentId: [{ required: true, message: "父级ID为必填项", trigger: "blur" }],
   showParent: [
     { required: true, message: "是否显示父级为必填项", trigger: "blur" }
   ],

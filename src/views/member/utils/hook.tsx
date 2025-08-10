@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import editForm from "../form.vue";
+import editForm from "../components/form.vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import { usePublicHooks } from "./hooks";
@@ -9,6 +9,7 @@ import type { PaginationProps } from "@pureadmin/table";
 import { deviceDetection } from "@pureadmin/utils";
 import {
   getMemberList,
+  getMemberOne,
   createMember,
   updateMember,
   deleteMember
@@ -213,25 +214,52 @@ export function useMember() {
     onSearch();
   }
 
-  function openDialog(title = "新增", row?: any) {
+  async function openDialog(title = "新增", row?: any) {
+    let formData = {
+      uid: "",
+      username: "",
+      nickname: "",
+      password: "", // 新增时为空，修改时也为空表示不更改
+      roleId: undefined,
+      avatar: "",
+      sex: undefined,
+      email: "",
+      mobile: "",
+      address: "",
+      remark: "",
+      sort: 0,
+      status: 1
+    };
+
+    // 如果是编辑模式，通过getOne接口获取完整数据
+    if (title !== "新增" && row?.uid) {
+      try {
+        const { data } = await getMemberOne({ uid: row.uid });
+        formData = {
+          uid: data.uid,
+          username: data.username,
+          nickname: data.nickname,
+          password: "", // 修改时密码为空表示不更改
+          roleId: data.roleId,
+          avatar: data.avatar,
+          sex: data.sex,
+          email: data.email,
+          mobile: data.mobile,
+          address: data.address,
+          remark: data.remark,
+          sort: data.sort,
+          status: data.status
+        };
+      } catch {
+        message("获取用户详情失败", { type: "error" });
+        return;
+      }
+    }
+
     addDialog({
       title: `${title}用户`,
       props: {
-        formInline: {
-          uid: row?.uid ?? "",
-          username: row?.username ?? "",
-          nickname: row?.nickname ?? "",
-          password: "", // 新增时为空，修改时也为空表示不更改
-          roleId: row?.roleId ?? undefined,
-          avatar: row?.avatar ?? "",
-          sex: row?.sex ?? undefined,
-          email: row?.email ?? "",
-          mobile: row?.mobile ?? "",
-          address: row?.address ?? "",
-          remark: row?.remark ?? "",
-          sort: row?.sort ?? 0,
-          status: row?.status ?? 1
-        }
+        formInline: formData
       },
       width: "60%",
       draggable: true,

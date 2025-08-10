@@ -3,12 +3,7 @@ import { useApi } from "./utils/hook";
 import { ref, computed, nextTick, onMounted } from "vue";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import {
-  delay,
-  subBefore,
-  deviceDetection,
-  useResizeObserver
-} from "@pureadmin/utils";
+import { delay, deviceDetection, useResizeObserver } from "@pureadmin/utils";
 
 import Delete from "~icons/ep/delete";
 import EditPen from "~icons/ep/edit-pen";
@@ -36,13 +31,14 @@ const iconClass = computed(() => {
   ];
 });
 
+// 渲染提示框属性
 const rendTippyProps = (content: string) => {
   return {
-    content,
-    offset: [0, 18],
-    duration: [300, 0],
-    followCursor: true,
-    hideOnClick: "toggle"
+    content, // 提示内容
+    offset: [0, 18], // 偏移量
+    duration: [300, 0], // 显示时间
+    followCursor: true, // 跟随鼠标
+    hideOnClick: "toggle" // 点击隐藏
   };
 };
 

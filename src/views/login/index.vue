@@ -44,7 +44,7 @@ const { title } = useNav();
 const { captchaState, refreshCaptcha, initCaptcha } = useCaptcha();
 
 const ruleForm = reactive({
-  username: "admin",
+  username: "super_admin",
   password: "admin123",
   code: "",
   cid: ""
@@ -138,9 +138,9 @@ useEventListener(document, "keydown", ({ code }) => {
       <div class="login-box">
         <div class="login-form">
           <avatar class="avatar" />
-          <Motion>
+          <!-- <Motion>
             <h2 class="outline-hidden">{{ title }}</h2>
-          </Motion>
+          </Motion> -->
 
           <el-form
             ref="ruleFormRef"

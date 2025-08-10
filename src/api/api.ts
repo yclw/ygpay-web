@@ -10,7 +10,7 @@ type Result = {
 };
 
 export type ApiModel = {
-  id: number;
+  apiUid: string;
   name: string;
   path: string;
   method: string;
@@ -70,7 +70,7 @@ export type ApiCreateRequest = {
 };
 
 export type ApiUpdateRequest = {
-  id: number;
+  apiUid: string;
   name: string;
   path: string;
   method: string;
@@ -83,7 +83,7 @@ export type ApiUpdateRequest = {
 };
 
 // 获取api详情
-export const getApiOne = (params: { id: number }) => {
+export const getApiOne = (params: { apiUid: string }) => {
   return http.request<ApiOneResult>("get", baseUrlApi("api/one"), { params });
 };
 
@@ -105,6 +105,6 @@ export const updateApi = (data: ApiUpdateRequest) => {
 };
 
 // 删除api
-export const deleteApi = (data: { id: number }) => {
+export const deleteApi = (data: { apiUid: string }) => {
   return http.request<Result>("delete", baseUrlApi("api/delete"), { data });
 };
