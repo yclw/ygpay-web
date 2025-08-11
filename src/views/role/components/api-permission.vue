@@ -12,7 +12,7 @@ import Check from "~icons/ep/check";
 import Close from "~icons/ep/close";
 
 interface Props {
-  roleId: number;
+  roleUid: string;
   roleName: string;
 }
 
@@ -35,7 +35,7 @@ const filteredApiGroups = ref<ApiGroupModel[]>([]);
 const loadRoleApiData = async () => {
   try {
     loading.value = true;
-    const { data } = await getRoleApi({ id: props.roleId });
+    const { data } = await getRoleApi({ roleUid: props.roleUid });
     apiGroupList.value = data.apiList;
 
     // 获取已选中的API UID列表
@@ -185,7 +185,7 @@ const handleConfirm = async () => {
   try {
     confirmLoading.value = true;
     await updateRoleApi({
-      id: props.roleId,
+      roleUid: props.roleUid,
       apiList: selectedApiUids.value
     });
     message("API权限更新成功", { type: "success" });
@@ -222,7 +222,7 @@ const getMethodTagType = (
 
 // 组件挂载时加载数据
 onMounted(() => {
-  if (props.roleId) {
+  if (props.roleUid) {
     loadRoleApiData();
   }
 });

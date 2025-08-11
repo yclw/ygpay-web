@@ -31,23 +31,23 @@ export function useRole() {
 
   // API权限对话框相关状态
   const apiPermissionDialogVisible = ref(false);
-  const currentRoleForApiPermission = ref<{ id: number; name: string }>({
-    id: 0,
+  const currentRoleForApiPermission = ref<{ roleUid: string; name: string }>({
+    roleUid: "",
     name: ""
   });
 
   // 菜单权限对话框相关状态
   const menuPermissionDialogVisible = ref(false);
-  const currentRoleForMenuPermission = ref<{ id: number; name: string }>({
-    id: 0,
+  const currentRoleForMenuPermission = ref<{ roleUid: string; name: string }>({
+    roleUid: "",
     name: ""
   });
 
   const columns: TableColumnList = [
     {
-      label: "ID",
-      prop: "id",
-      width: 80
+      label: "角色UID",
+      prop: "roleUid",
+      width: 120
     },
     {
       label: "角色名称",
@@ -65,11 +65,7 @@ export function useRole() {
       minWidth: 200,
       showOverflowTooltip: true
     },
-    {
-      label: "父级ID",
-      prop: "parentId",
-      width: 80
-    },
+
     {
       label: "父级角色名称",
       prop: "parentName",
@@ -126,7 +122,7 @@ export function useRole() {
     )
       .then(async () => {
         try {
-          await deleteRole({ id: row.id });
+          await deleteRole({ roleUid: row.roleUid });
           message(`已删除角色名称为${row.name}的这条数据`, { type: "success" });
           onSearch();
         } catch {
@@ -146,7 +142,7 @@ export function useRole() {
     loading.value = true;
     try {
       const { data } = await getRoleList();
-      let filteredList = data.list;
+      let filteredList = data.tree;
 
       // 按名称筛选
       if (form.name) {
@@ -178,20 +174,20 @@ export function useRole() {
       name: "",
       key: "",
       remark: "",
-      parentId: 0,
+      parentUid: undefined,
       sort: 0,
       status: 1
     };
 
     // 如果是编辑模式，通过getOne接口获取完整数据
-    if (title !== "新增" && row?.id) {
+    if (title !== "新增" && row?.roleUid) {
       try {
-        const { data } = await getRoleOne({ id: row.id });
+        const { data } = await getRoleOne({ roleUid: row.roleUid });
         formData = {
           name: data.name,
           key: data.key,
           remark: data.remark,
-          parentId: data.parentId,
+          parentUid: data.parentUid,
           sort: data.sort,
           status: data.status
         };
@@ -231,7 +227,7 @@ export function useRole() {
                 await createRole(curData);
               } else {
                 await updateRole({
-                  id: row?.id,
+                  roleUid: row?.roleUid,
                   ...curData
                 });
               }
@@ -252,7 +248,7 @@ export function useRole() {
     addDialog({
       title: `设置 ${row.name} 的API权限`,
       props: {
-        roleId: row.id,
+        roleUid: row.roleUid,
         roleName: row.name
       },
       width: "70%",
@@ -262,7 +258,7 @@ export function useRole() {
       closeOnClickModal: false,
       contentRenderer: ({ options }) =>
         h(apiPermissionForm, {
-          roleId: options.props.roleId,
+          roleUid: options.props.roleUid,
           roleName: options.props.roleName,
           ref: (el: any) => {
             apiFormRef = el;
@@ -291,7 +287,7 @@ export function useRole() {
     addDialog({
       title: `设置 ${row.name} 的菜单权限`,
       props: {
-        roleId: row.id,
+        roleUid: row.roleUid,
         roleName: row.name
       },
       width: "60%",
@@ -301,7 +297,7 @@ export function useRole() {
       closeOnClickModal: false,
       contentRenderer: ({ options }) =>
         h(menuPermissionForm, {
-          roleId: options.props.roleId,
+          roleUid: options.props.roleUid,
           roleName: options.props.roleName,
           ref: (el: any) => {
             menuFormRef = el;
@@ -326,7 +322,7 @@ export function useRole() {
   // 旧的函数保持兼容性（暂时保留）
   function closeApiPermissionDialog() {
     apiPermissionDialogVisible.value = false;
-    currentRoleForApiPermission.value = { id: 0, name: "" };
+    currentRoleForApiPermission.value = { roleUid: "", name: "" };
   }
 
   function onApiPermissionUpdated() {
@@ -335,7 +331,7 @@ export function useRole() {
 
   function closeMenuPermissionDialog() {
     menuPermissionDialogVisible.value = false;
-    currentRoleForMenuPermission.value = { id: 0, name: "" };
+    currentRoleForMenuPermission.value = { roleUid: "", name: "" };
   }
 
   function onMenuPermissionUpdated() {

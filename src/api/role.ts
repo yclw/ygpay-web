@@ -10,8 +10,8 @@ type Result = {
 };
 
 export type RoleModel = {
-  id: number;
-  parentId: number;
+  roleUid: string;
+  parentUid?: string;
   parentName: string;
   name: string;
   key: string;
@@ -43,7 +43,7 @@ export type RoleListResult = {
 };
 
 export type RoleCreateRequest = {
-  parentId: number;
+  parentUid?: string;
   name: string;
   key: string;
   remark: string;
@@ -52,8 +52,8 @@ export type RoleCreateRequest = {
 };
 
 export type RoleUpdateRequest = {
-  id: number;
-  parentId: number;
+  roleUid: string;
+  parentUid?: string;
   name: string;
   key: string;
   remark: string;
@@ -79,7 +79,7 @@ export type RoleMenuResult = {
 };
 
 export type RoleMenuUpdateRequest = {
-  id: number;
+  roleUid: string;
   menuList: string[];
 };
 
@@ -106,12 +106,12 @@ export type RoleApiResult = {
 };
 
 export type RoleApiUpdateRequest = {
-  id: number;
+  roleUid: string;
   apiList: string[];
 };
 
 // 获取角色详情
-export const getRoleOne = (params: { id: number }) => {
+export const getRoleOne = (params: { roleUid: string }) => {
   return http.request<RoleOneResult>("get", baseUrlApi("role/one"), { params });
 };
 
@@ -131,19 +131,19 @@ export const updateRole = (data: RoleUpdateRequest) => {
 };
 
 // 删除角色
-export const deleteRole = (data: { id: number }) => {
+export const deleteRole = (data: { roleUid: string }) => {
   return http.request<Result>("delete", baseUrlApi("role/delete"), { data });
 };
 
 // 获取角色菜单权限
-export const getRoleMenu = (params: { id: number }) => {
+export const getRoleMenu = (params: { roleUid: string }) => {
   return http.request<RoleMenuResult>("get", baseUrlApi("role/menu/get"), {
     params
   });
 };
 
 // 获取角色api权限
-export const getRoleApi = (params: { id: number }) => {
+export const getRoleApi = (params: { roleUid: string }) => {
   return http.request<RoleApiResult>("get", baseUrlApi("role/api/get"), {
     params
   });

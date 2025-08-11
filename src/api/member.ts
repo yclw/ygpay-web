@@ -11,7 +11,6 @@ type Result = {
 
 export type MemberModel = {
   uid: string;
-  roleId: number;
   roleName: string;
   username: string;
   nickname: string;
@@ -43,7 +42,6 @@ export type MemberListRequest = {
   nickname?: string;
   email?: string;
   mobile?: string;
-  roleId?: number;
   sex?: number;
   status?: number;
   startDate?: Date;
@@ -67,7 +65,7 @@ export type MemberCreateRequest = {
   username: string;
   nickname: string;
   password: string;
-  roleId: number;
+  roleUid: string;
   avatar: string;
   sex: number;
   email: string;
@@ -91,7 +89,7 @@ export type MemberUpdateRequest = {
   sort: number;
   status: number;
   password?: string;
-  roleId: number;
+  roleUid: string;
 };
 
 // 获取用户详情

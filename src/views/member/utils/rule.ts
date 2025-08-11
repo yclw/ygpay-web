@@ -39,7 +39,7 @@ export const formRules = reactive(<FormRules>{
       trigger: "blur"
     }
   ],
-  roleId: [{ required: true, message: "角色为必填项", trigger: "blur" }],
+  roleUid: [{ required: true, message: "角色为必填项", trigger: "blur" }],
   email: [
     { required: true, message: "邮箱为必填项", trigger: "blur" },
     { type: "email", message: "请输入正确的邮箱格式", trigger: "blur" }

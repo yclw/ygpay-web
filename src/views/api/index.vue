@@ -192,7 +192,7 @@ onMounted(() => {
               class="w-[120px]!"
               @change="onSearch"
             >
-              <el-option label="ID" value="id" />
+              <el-option label="API UID" value="apiUid" />
               <el-option label="API名称" value="name" />
               <el-option label="API路径" value="path" />
               <el-option label="请求方法" value="method" />

@@ -2,13 +2,14 @@
 import { ref } from "vue";
 import { formRules } from "../utils/rule";
 import { FormProps } from "../utils/types";
+import RoleSelect from "./role-select.vue";
 
 const props = withDefaults(defineProps<FormProps>(), {
   formInline: () => ({
     name: "",
     key: "",
     remark: "",
-    parentId: 0,
+    parentUid: undefined,
     sort: 0,
     status: 1
   })
@@ -56,17 +57,15 @@ defineExpose({ getRef });
       />
     </el-form-item>
 
+    <el-form-item label="父级角色" prop="parentUid">
+      <RoleSelect
+        v-model="newFormInline.parentUid"
+        placeholder="请选择父级角色(可为空)"
+        clearable
+      />
+    </el-form-item>
+
     <el-row :gutter="20">
-      <el-col :span="12">
-        <el-form-item label="父级角色ID" prop="parentId">
-          <el-input-number
-            v-model="newFormInline.parentId"
-            :min="0"
-            placeholder="请输入父级角色ID，0表示顶级角色"
-            style="width: 100%"
-          />
-        </el-form-item>
-      </el-col>
       <el-col :span="12">
         <el-form-item label="排序" prop="sort">
           <el-input-number
@@ -78,9 +77,6 @@ defineExpose({ getRef });
           />
         </el-form-item>
       </el-col>
-    </el-row>
-
-    <el-row :gutter="20">
       <el-col :span="12">
         <el-form-item label="状态" prop="status">
           <el-select

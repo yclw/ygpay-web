@@ -23,7 +23,7 @@ export function useMember() {
     nickname: "",
     email: "",
     mobile: "",
-    roleId: undefined,
+    roleUid: undefined,
     sex: undefined,
     status: undefined,
     startDate: undefined,
@@ -198,7 +198,7 @@ export function useMember() {
     form.nickname = "";
     form.email = "";
     form.mobile = "";
-    form.roleId = undefined;
+    form.roleUid = undefined;
     form.sex = undefined;
     form.status = undefined;
     form.startDate = undefined;
@@ -220,7 +220,7 @@ export function useMember() {
       username: "",
       nickname: "",
       password: "", // 新增时为空，修改时也为空表示不更改
-      roleId: undefined,
+      roleUid: undefined,
       avatar: "",
       sex: undefined,
       email: "",
@@ -240,7 +240,7 @@ export function useMember() {
           username: data.username,
           nickname: data.nickname,
           password: "", // 修改时密码为空表示不更改
-          roleId: data.roleId,
+          roleUid: undefined, // MemberModel中没有roleUid字段，编辑时需要手动设置
           avatar: data.avatar,
           sex: data.sex,
           email: data.email,
@@ -302,7 +302,7 @@ export function useMember() {
                   uid: row?.uid,
                   username: curData.username,
                   nickname: curData.nickname,
-                  roleId: curData.roleId,
+                  roleUid: curData.roleUid,
                   avatar: curData.avatar,
                   sex: curData.sex,
                   email: curData.email,

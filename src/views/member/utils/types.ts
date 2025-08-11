@@ -9,8 +9,8 @@ interface FormItemProps {
   nickname: string;
   /** 密码 (新增必填，修改时可选) */
   password?: string;
-  /** 角色ID */
-  roleId: number;
+  /** 角色UID */
+  roleUid: string;
   /** 头像 */
   avatar: string;
   /** 性别 */

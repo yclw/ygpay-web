@@ -102,6 +102,7 @@ const {
       <template v-slot="{ size, dynamicColumns }">
         <pure-table
           ref="tableRef"
+          row-key="roleUid"
           align-whole="center"
           showOverflowTooltip
           table-layout="auto"

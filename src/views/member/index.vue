@@ -117,15 +117,7 @@ onMounted(() => {
           class="w-[180px]!"
         />
       </el-form-item>
-      <el-form-item label="角色：" prop="roleId">
-        <el-input-number
-          v-model="form.roleId"
-          placeholder="请输入角色ID"
-          clearable
-          class="w-[180px]!"
-          :min="1"
-        />
-      </el-form-item>
+
       <el-form-item label="性别：" prop="sex">
         <el-select
           v-model="form.sex"
@@ -214,7 +206,7 @@ onMounted(() => {
               <el-option label="UID" value="uid" />
               <el-option label="用户名" value="username" />
               <el-option label="昵称" value="nickname" />
-              <el-option label="角色ID" value="roleId" />
+
               <el-option label="邮箱" value="email" />
               <el-option label="手机号" value="mobile" />
               <el-option label="性别" value="sex" />

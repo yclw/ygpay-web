@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import { formRules } from "../utils/rule";
 import { FormProps } from "../utils/types";
-import { getRoleList } from "@/api/role";
+import RoleSelect from "./role-select.vue";
 
 const props = withDefaults(defineProps<FormProps>(), {
   formInline: () => ({
@@ -10,7 +10,7 @@ const props = withDefaults(defineProps<FormProps>(), {
     username: "",
     nickname: "",
     password: "",
-    roleId: undefined,
+    roleUid: undefined,
     avatar: "",
     sex: undefined,
     email: "",
@@ -24,21 +24,7 @@ const props = withDefaults(defineProps<FormProps>(), {
 
 const ruleFormRef = ref();
 const newFormInline = ref(props.formInline);
-const roleOptions = ref([]);
 const showPassword = ref(false);
-
-// 获取角色列表
-async function loadRoleOptions() {
-  try {
-    const { data } = await getRoleList({ page: 1, size: 100 });
-    roleOptions.value = data.list.map(role => ({
-      label: role.name,
-      value: role.id
-    }));
-  } catch (error) {
-    console.error("获取角色列表失败:", error);
-  }
-}
 
 function getRef() {
   return ruleFormRef.value;
@@ -47,10 +33,6 @@ function getRef() {
 function togglePasswordVisibility() {
   showPassword.value = !showPassword.value;
 }
-
-onMounted(() => {
-  loadRoleOptions();
-});
 
 defineExpose({ getRef });
 </script>
@@ -104,20 +86,12 @@ defineExpose({ getRef });
         </el-form-item>
       </el-col>
       <el-col :span="12">
-        <el-form-item label="角色" prop="roleId">
-          <el-select
-            v-model="newFormInline.roleId"
-            placeholder="请选择角色"
+        <el-form-item label="角色" prop="roleUid">
+          <RoleSelect
+            v-model="newFormInline.roleUid"
+            placeholder="请选择用户角色"
             clearable
-            style="width: 100%"
-          >
-            <el-option
-              v-for="role in roleOptions"
-              :key="role.value"
-              :label="role.label"
-              :value="role.value"
-            />
-          </el-select>
+          />
         </el-form-item>
       </el-col>
     </el-row>

@@ -7,7 +7,7 @@ import Check from "~icons/ep/check";
 import Close from "~icons/ep/close";
 
 interface Props {
-  roleId: number;
+  roleUid: string;
   roleName: string;
 }
 
@@ -34,7 +34,7 @@ const treeProps = {
 const loadRoleMenuData = async () => {
   try {
     loading.value = true;
-    const { data } = await getRoleMenu({ id: props.roleId });
+    const { data } = await getRoleMenu({ roleUid: props.roleUid });
     menuTreeData.value = data.tree;
 
     // 获取已选中的菜单UID列表
@@ -179,7 +179,7 @@ const handleConfirm = async () => {
     const completeMenuUids = calculateCompleteMenuUids(currentCheckedKeys);
 
     await updateRoleMenu({
-      id: props.roleId,
+      roleUid: props.roleUid,
       menuList: completeMenuUids
     });
     message("菜单权限更新成功", { type: "success" });
@@ -199,7 +199,7 @@ const handleClose = () => {
 
 // 组件挂载时加载数据
 onMounted(() => {
-  if (props.roleId) {
+  if (props.roleUid) {
     loadRoleMenuData();
   }
 });
