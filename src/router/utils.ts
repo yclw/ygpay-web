@@ -21,6 +21,7 @@ import { buildHierarchyTree } from "@/utils/tree";
 import { type menuType, routerArrays } from "@/layout/types";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
+import { useUserStoreHook } from "@/store/modules/user";
 const IFrame = () => import("@/layout/frame.vue");
 // https://cn.vitejs.dev/guide/features.html#glob-import
 const modulesRoutes = import.meta.glob("/src/views/**/*.{vue,tsx}");
@@ -196,21 +197,31 @@ function initRouter() {
       });
     } else {
       return new Promise(resolve => {
-        getAsyncRoutes().then(({ data }) => {
-          const menuData = data.menu;
-          handleAsyncRoutes(cloneDeep(menuData));
-          storageLocal().setItem(key, menuData);
-          resolve(router);
-        });
+        getAsyncRoutes()
+          .then(({ data }) => {
+            const menuData = data.menu;
+            handleAsyncRoutes(cloneDeep(menuData));
+            storageLocal().setItem(key, menuData);
+            resolve(router);
+          })
+          .catch(error => {
+            console.error("获取动态路由失败:", error);
+            useUserStoreHook().logOut();
+          });
       });
     }
   } else {
     return new Promise(resolve => {
-      getAsyncRoutes().then(({ data }) => {
-        const menuData = data.menu;
-        handleAsyncRoutes(cloneDeep(menuData));
-        resolve(router);
-      });
+      getAsyncRoutes()
+        .then(({ data }) => {
+          const menuData = data.menu;
+          handleAsyncRoutes(cloneDeep(menuData));
+          resolve(router);
+        })
+        .catch(error => {
+          console.error("获取动态路由失败:", error);
+          useUserStoreHook().logOut();
+        });
     });
   }
 }
